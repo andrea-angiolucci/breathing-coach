@@ -190,7 +190,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    Breathing Coach v0.1 — Orbita / Quota Zero
    Motore: la sessione è resa come UNA traccia audio; il player è l'orologio.
    ============================================================ */
-const VERSION='0.1.3';
+const VERSION='0.1.4';
 const SCHEMA=1;
 const KEY={cfg:'bc.params.v1',sess:'bc.sessions.v1',acc:'bc.disclaimer.v1',lang:'bc.lang',athlete:'bc.athlete'};
 
@@ -286,53 +286,52 @@ function buildTimeline(p){
 }
 
 /* ---------- audio: rendering della traccia ---------- */
-const SR=24000;
-/* Campanella morbida: fondamentale + 2ª armonica, attacco dolce, decadimento naturale.
-   Frequenze medie (400-1100 Hz): l'altoparlante dell'iPhone le riproduce bene. */
-function chime(ctx,dest,t0,f,dur,gain=.5){
-  const g=ctx.createGain();g.connect(dest);
-  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(gain,t0+.03);g.gain.exponentialRampToValueAtTime(.001,t0+dur);
-  const o1=ctx.createOscillator();o1.type='sine';o1.frequency.value=f;
-  const g1=ctx.createGain();g1.gain.value=1;o1.connect(g1).connect(g);
-  const o2=ctx.createOscillator();o2.type='sine';o2.frequency.value=f*2;
-  const g2=ctx.createGain();g2.gain.setValueAtTime(.25,t0);g2.gain.exponentialRampToValueAtTime(.01,t0+dur*.5);o2.connect(g2).connect(g);
-  o1.start(t0);o2.start(t0);o1.stop(t0+dur+.02);o2.stop(t0+dur+.02);
+const SR=44100; // frequenza nativa iOS: nessun ricampionamento
+/* Sintesi in puro JavaScript (niente OfflineAudioContext: su iOS produce rumore).
+   Campanella: fondamentale + 2ª armonica, attacco 30 ms, decadimento esponenziale. */
+const CHIME_CACHE=new Map();
+function chimeSamples(f,dur,gain){
+  const key=f+'|'+dur+'|'+gain;if(CHIME_CACHE.has(key))return CHIME_CACHE.get(key);
+  const n=Math.round(dur*SR),out=new Float32Array(n);const A=.03,w1=2*Math.PI*f/SR,w2=2*w1;
+  const dec=Math.log(.001/gain)/(dur-A),hdec=Math.log(.01/.25)/(dur*.5);
+  for(let i=0;i<n;i++){const t=i/SR;const a=t<A?gain*t/A:gain*Math.exp(dec*(t-A));const h=Math.max(.01,.25*Math.exp(hdec*t));out[i]=a*(Math.sin(w1*i)+h*Math.sin(w2*i))}
+  CHIME_CACHE.set(key,out);return out;
 }
-const N={C5:523.25,E5:659.25,G5:783.99,A5:880,C6:1046.5,A4:440,E4:329.63};
+function mix(track,t0,samples){let o=Math.round(t0*SR);const n=Math.min(samples.length,track.length-o);for(let i=0;i<n;i++)track[o+i]+=samples[i]}
+const N={C5:523.25,E5:659.25,G5:783.99,A5:880,C6:1046.5,A4:440};
+const ch=(tr,t,f,d,g=.45)=>mix(tr,t,chimeSamples(f,d,g));
 /* Segnali: distinti per numero di note e direzione, non solo per altezza */
 const CUES={
-  inhale:(c,d,t)=>{chime(c,d,t,N.C5,.5);chime(c,d,t+.18,N.G5,.9)},              // due note in salita
-  exhale:(c,d,t)=>{chime(c,d,t,N.G5,.5);chime(c,d,t+.18,N.C5,.9)},              // due note in discesa
-  hold_full:(c,d,t)=>{chime(c,d,t,N.A5,.35);chime(c,d,t+.28,N.A5,.7)},           // due tocchi uguali, acuti
-  hold_empty:(c,d,t)=>chime(c,d,t,N.A4,1.4,.6),                                  // un tocco solo, lungo, più basso
-  last:(c,d,t)=>{for(let i=0;i<3;i++)chime(c,d,t+i*.2,N.C6,.35,.4)},              // tre tocchi rapidi: ultimo ciclo
-  end:(c,d,t)=>{[N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>chime(c,d,t+i*.16,f,1.6,.4))}, // arpeggio finale
+  inhale:(tr,t)=>{ch(tr,t,N.C5,.5);ch(tr,t+.18,N.G5,.9)},              // due note in salita
+  exhale:(tr,t)=>{ch(tr,t,N.G5,.5);ch(tr,t+.18,N.C5,.9)},              // due note in discesa
+  hold_full:(tr,t)=>{ch(tr,t,N.A5,.35);ch(tr,t+.28,N.A5,.7)},           // due tocchi uguali, acuti
+  hold_empty:(tr,t)=>ch(tr,t,N.A4,1.4,.55),                            // un tocco solo, lungo, più basso
+  last:(tr,t)=>{for(let i=0;i<3;i++)ch(tr,t+i*.2,N.C6,.35,.38)},        // tre tocchi rapidi: ultimo ciclo
+  end:(tr,t)=>{[N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>ch(tr,t+i*.16,f,1.6,.35))}, // arpeggio finale
 };
-async function renderTrack(tl){
-  const len=Math.ceil((tl.total+3)*SR);
-  const ctx=new OfflineAudioContext(1,len,SR);
-  const dest=ctx.destination;
-  for(const s of tl.segs){
-    if(s.block==='warmup'){ if(s.type==='inhale') CUES.inhale(ctx,dest,s.start); else CUES.exhale(ctx,dest,s.start); }
-    else{
-      CUES[s.cue](ctx,dest,s.start);
-      if(s.type==='inhale'&&s.rep===s.reps&&s.reps>1) CUES.last(ctx,dest,s.start+1.0);
-    }
-  }
-  CUES.end(ctx,dest,tl.total);
-  const buf=await ctx.startRendering();
-  return URL.createObjectURL(wavBlob(buf));
+function renderCues(totalSec,fn){
+  const track=new Float32Array(Math.ceil(totalSec*SR));fn(track);
+  return URL.createObjectURL(wavBlob(track));
 }
-function wavBlob(buf){
-  const ch=buf.getChannelData(0),n=ch.length,ab=new ArrayBuffer(44+n*2),v=new DataView(ab);
+async function renderTrack(tl){
+  await new Promise(r=>setTimeout(r,0)); // lascia disegnare "Preparazione…"
+  return renderCues(tl.total+3,track=>{
+    for(const s of tl.segs){
+      if(s.block==='warmup'){ if(s.type==='inhale') CUES.inhale(track,s.start); else CUES.exhale(track,s.start); }
+      else{ CUES[s.cue](track,s.start); if(s.type==='inhale'&&s.rep===s.reps&&s.reps>1) CUES.last(track,s.start+1.0); }
+    }
+    CUES.end(track,tl.total);
+  });
+}
+function wavBlob(ch){
+  const n=ch.length,ab=new ArrayBuffer(44+n*2),v=new DataView(ab);
   const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
   w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
   v.setUint32(24,SR,true);v.setUint32(28,SR*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
   let pk=0;for(let i=0;i<n;i++){const a=Math.abs(ch[i]);if(a>pk)pk=a}const k=pk>0?Math.min(1,.85/pk):1;
-  for(let i=0;i<n;i++){const s=Math.max(-1,Math.min(1,ch[i]*k));v.setInt16(44+i*2,s<0?s*32768:s*32767,true)}
+  const out=new Int16Array(ab,44,n);for(let i=0;i<n;i++){const s=Math.max(-1,Math.min(1,ch[i]*k));out[i]=s<0?s*32768:s*32767}
   return new Blob([ab],{type:'audio/wav'});
 }
-/* silenzio brevissimo per sbloccare l'audio dentro il tap */
 /* silenzio reale di 0,3 s (un WAV vuoto blocca play() su iOS) */
 function silenceWav(sec){const n=Math.round(SR*sec),ab=new ArrayBuffer(44+n*2),v=new DataView(ab);const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,SR,true);v.setUint32(28,SR*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);return URL.createObjectURL(new Blob([ab],{type:'audio/wav'}))}
 const SILENCE=silenceWav(0.3);
@@ -344,7 +343,7 @@ const audio=new Audio();audio.setAttribute('playsinline','');audio.preload='auto
 /* ---------- diagnostics ---------- */
 const LOG=[];
 function log(ev,d){const line=`${new Date().toISOString().slice(11,23)} ${ev}${d!==undefined?' '+(typeof d==='string'?d:JSON.stringify(d)):''}`;LOG.push(line);if(LOG.length>400)LOG.shift();const o=document.getElementById('diag-out');if(o&&document.getElementById('s-diag').classList.contains('on'))o.textContent=LOG.join('\n')}
-function env(){const n=navigator;return {ua:n.userAgent,standalone:!!n.standalone||matchMedia('(display-mode: standalone)').matches,wakeLock:'wakeLock'in n,vibrate:'vibrate'in n,mediaSession:'mediaSession'in n,offlineAudio:'OfflineAudioContext'in window,screen:`${screen.width}x${screen.height}`,version:VERSION}}
+function env(){const n=navigator;return {ua:n.userAgent,standalone:!!n.standalone||matchMedia('(display-mode: standalone)').matches,wakeLock:'wakeLock'in n,vibrate:'vibrate'in n,mediaSession:'mediaSession'in n,synth:'js',screen:`${screen.width}x${screen.height}`,version:VERSION}}
 log('env',env());
 document.addEventListener('visibilitychange',()=>{log('visibility',document.visibilityState);if(document.visibilityState==='visible'&&run)acquireWake()});
 ['play','playing','pause','ended','stalled','suspend','waiting','error','seeking'].forEach(e=>audio.addEventListener(e,()=>log('audio:'+e,e==='error'&&audio.error?audio.error.code:Math.round(audio.currentTime*100)/100)));
@@ -454,10 +453,8 @@ applyMute();
 /* ---------- test suoni ---------- */
 $('b-testsound').onclick=async()=>{
   try{audio.src=SILENCE;await withTimeout(audio.play(),1500,'unlock')}catch(e){log('audio:unlock-failed',e.message)}
-  const ctx=new OfflineAudioContext(1,SR*13,SR),d=ctx.destination;
-  CUES.inhale(ctx,d,.5);CUES.hold_full(ctx,d,2.5);CUES.exhale(ctx,d,4.5);CUES.hold_empty(ctx,d,6.5);CUES.last(ctx,d,8.8);CUES.end(ctx,d,10.5);
-  const buf=await ctx.startRendering();audio.src=URL.createObjectURL(wavBlob(buf));
-  try{await audio.play();log('test-sound:play')}catch(e){log('test-sound:failed',e.message)}
+  audio.src=renderCues(13,tr=>{CUES.inhale(tr,.5);CUES.hold_full(tr,2.5);CUES.exhale(tr,4.5);CUES.hold_empty(tr,6.5);CUES.last(tr,8.8);CUES.end(tr,10.5)});
+  try{await withTimeout(audio.play(),5000,'play');log('test-sound:play')}catch(e){log('test-sound:failed',e.message)}
   alert(t('sound_hint'));
 };
 
