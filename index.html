@@ -190,7 +190,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    Breathing Coach v0.1 — Orbita / Quota Zero
    Motore: la sessione è resa come UNA traccia audio; il player è l'orologio.
    ============================================================ */
-const VERSION='0.1.4';
+const VERSION='0.1.5';
 const SCHEMA=1;
 const KEY={cfg:'bc.params.v1',sess:'bc.sessions.v1',acc:'bc.disclaimer.v1',lang:'bc.lang',athlete:'bc.athlete'};
 
@@ -289,25 +289,25 @@ function buildTimeline(p){
 const SR=44100; // frequenza nativa iOS: nessun ricampionamento
 /* Sintesi in puro JavaScript (niente OfflineAudioContext: su iOS produce rumore).
    Campanella: fondamentale + 2ª armonica, attacco 30 ms, decadimento esponenziale. */
-const CHIME_CACHE=new Map();
-function chimeSamples(f,dur,gain){
-  const key=f+'|'+dur+'|'+gain;if(CHIME_CACHE.has(key))return CHIME_CACHE.get(key);
-  const n=Math.round(dur*SR),out=new Float32Array(n);const A=.03,w1=2*Math.PI*f/SR,w2=2*w1;
-  const dec=Math.log(.001/gain)/(dur-A),hdec=Math.log(.01/.25)/(dur*.5);
-  for(let i=0;i<n;i++){const t=i/SR;const a=t<A?gain*t/A:gain*Math.exp(dec*(t-A));const h=Math.max(.01,.25*Math.exp(hdec*t));out[i]=a*(Math.sin(w1*i)+h*Math.sin(w2*i))}
-  CHIME_CACHE.set(key,out);return out;
+/* Toni della v0.1 (glissando, beep, nota bassa, accordo), sintetizzati in JS.
+   Inviluppo: attacco 20 ms, rilascio 60 ms, come in origine. */
+function toneSamples(f0,f1,dur,gain=.6,type='sine'){
+  const n=Math.round(dur*SR),out=new Float32Array(n);let ph=0;const A=.02,R=.06,k=Math.log(f1/f0);
+  for(let i=0;i<n;i++){const t=i/SR;const f=f1===f0?f0:f0*Math.exp(k*t/dur);ph+=2*Math.PI*f/SR;
+    const env=t<A?t/A:(t>dur-R?Math.max(0,(dur-t)/R):1);
+    const x=type==='triangle'?(2/Math.PI)*Math.asin(Math.sin(ph)):Math.sin(ph);out[i]=gain*env*x}
+  return out;
 }
 function mix(track,t0,samples){let o=Math.round(t0*SR);const n=Math.min(samples.length,track.length-o);for(let i=0;i<n;i++)track[o+i]+=samples[i]}
-const N={C5:523.25,E5:659.25,G5:783.99,A5:880,C6:1046.5,A4:440};
-const ch=(tr,t,f,d,g=.45)=>mix(tr,t,chimeSamples(f,d,g));
-/* Segnali: distinti per numero di note e direzione, non solo per altezza */
+const tone=(tr,t,f0,f1,d,g,ty)=>mix(tr,t,toneSamples(f0,f1,d,g,ty));
+/* Segnali: distinti per forma, non solo per altezza */
 const CUES={
-  inhale:(tr,t)=>{ch(tr,t,N.C5,.5);ch(tr,t+.18,N.G5,.9)},              // due note in salita
-  exhale:(tr,t)=>{ch(tr,t,N.G5,.5);ch(tr,t+.18,N.C5,.9)},              // due note in discesa
-  hold_full:(tr,t)=>{ch(tr,t,N.A5,.35);ch(tr,t+.28,N.A5,.7)},           // due tocchi uguali, acuti
-  hold_empty:(tr,t)=>ch(tr,t,N.A4,1.4,.55),                            // un tocco solo, lungo, più basso
-  last:(tr,t)=>{for(let i=0;i<3;i++)ch(tr,t+i*.2,N.C6,.35,.38)},        // tre tocchi rapidi: ultimo ciclo
-  end:(tr,t)=>{[N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>ch(tr,t+i*.16,f,1.6,.35))}, // arpeggio finale
+  inhale:(tr,t)=>tone(tr,t,392,784,.7),                                        // salita
+  exhale:(tr,t)=>tone(tr,t,784,392,.7),                                        // discesa
+  hold_full:(tr,t)=>{tone(tr,t,880,880,.18);tone(tr,t+.26,880,880,.18)},       // 2 beep acuti
+  hold_empty:(tr,t)=>tone(tr,t,262,262,.5,.7,'triangle'),                      // 1 nota bassa lunga
+  last:(tr,t)=>{for(let i=0;i<3;i++)tone(tr,t+i*.22,1047,1047,.12,.5)},         // 3 beep: ultimo ciclo
+  end:(tr,t)=>{tone(tr,t,523,523,1.2,.4);tone(tr,t,659,659,1.2,.35);tone(tr,t,784,784,1.2,.3)}, // accordo
 };
 function renderCues(totalSec,fn){
   const track=new Float32Array(Math.ceil(totalSec*SR));fn(track);
