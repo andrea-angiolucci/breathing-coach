@@ -10,6 +10,7 @@
 <title>Breathing Coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root{
   box-sizing:border-box;
@@ -20,7 +21,6 @@
   --ph-inhale:#8FE0D2; --ph-hold_full:#F2C879; --ph-exhale:#7FB4F0; --ph-hold_empty:#C4A6EA; --ph-warm:#A9D3B5;
   --font:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
-:root[data-theme="light"]{--bg:#061A2B;}
 html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
 body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 *{box-sizing:inherit}
@@ -33,26 +33,36 @@ h2{font-size:17px;font-weight:600;margin:24px 0 10px}
 p{line-height:1.55;margin:0 0 12px;color:var(--ink2);font-size:15px}
 p.lead{color:var(--ink);font-size:16px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.pill{font-size:13px;color:var(--ink2);border:1px solid var(--line);border-radius:20px;padding:6px 12px}
+.pill{font-size:13px;color:var(--ink2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;white-space:nowrap}
+.pill.acc{color:var(--accent);border-color:rgba(143,224,210,.4)}
 .btn{display:block;width:100%;padding:16px;border-radius:14px;font-size:17px;font-weight:600;text-align:center;background:var(--accent);color:#04131D;margin-top:10px}
 .btn:active{transform:scale(.985)}
 .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:400}
 .btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn.google{background:#fff;color:#1f1f1f;display:flex;align-items:center;justify-content:center;gap:10px}
 .btn[disabled]{opacity:.45}
 .row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);gap:12px}
 .row:last-child{border-bottom:0}
 .row .lbl{font-size:15px}
+.row .lbl small{display:block;color:var(--ink2);font-size:12.5px;margin-top:2px}
 .grp{border-left:3px solid var(--c);padding-left:14px;margin-top:6px}
 .grp h2{color:var(--c);margin-top:6px}
 .grp-warm{--c:var(--ph-warm)}.grp-main{--c:var(--ph-hold_full)}
 .mute{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);font-size:20px;display:flex;align-items:center;justify-content:center}
 .sess .mute{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;border-color:rgba(4,19,29,.35)}
-.row .lbl small{display:block;color:var(--ink2);font-size:12.5px;margin-top:2px}
 .stepper{display:flex;align-items:center;gap:6px}
 .stepper button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);font-size:20px;line-height:1}
 .stepper .v{min-width:56px;text-align:center;font-variant-numeric:tabular-nums;font-size:17px;font-weight:600}
+.stepper .v small{display:block;font-size:11px;color:var(--ink2);font-weight:400}
 .note{background:var(--bg2);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.5;color:var(--ink)}
 .sum{font-size:14px;color:var(--ink2);margin:6px 0 2px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 8px}
+.chips button{padding:10px 14px;border-radius:12px;border:1px solid var(--line);font-size:15px}
+.chips button.sel{border-color:var(--accent);background:rgba(143,224,210,.12);color:var(--accent)}
+input.txt{width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);font-size:17px}
+input.code{letter-spacing:8px;text-align:center;font-size:28px;font-weight:600}
+.err{color:var(--danger);font-size:14px;min-height:20px;margin:8px 0}
+.ok{color:var(--accent)}
 /* session */
 #s-session{padding:0;transition:background .9s ease}
 .sess{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 20px 24px;text-align:center;min-height:100%}
@@ -77,17 +87,18 @@ textarea{width:100%;min-height:84px;border-radius:12px;border:1px solid var(--li
 pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:12px;border-radius:12px;max-height:50vh;overflow:auto;white-space:pre-wrap;word-break:break-word}
 .hist{font-size:14px;padding:12px 0;border-bottom:1px solid var(--line);color:var(--ink2)}
 .hist b{color:var(--ink);font-weight:600}
-.overlay{position:fixed;inset:0;background:rgba(6,26,43,.96);display:none;align-items:flex-end;justify-content:center;padding:20px;z-index:9}
-.overlay.on{display:flex}
-.sheet{background:var(--bg2);border-radius:18px;padding:20px;max-width:480px;width:100%;max-height:85vh;overflow:auto}
 .link{color:var(--accent);text-decoration:underline;background:none;padding:0;font-size:14px}
 .tiny{font-size:12.5px;color:var(--ink2)}
+.stats{display:flex;gap:10px;margin:8px 0 4px}
+.stats div{flex:1;background:var(--bg2);border-radius:12px;padding:12px;text-align:center}
+.stats b{display:block;font-size:22px;font-weight:600}
+.stats span{font-size:12px;color:var(--ink2)}
 @media (prefers-reduced-motion:reduce){#s-session{transition:none}.bar i{transition:none}}
 </style>
 </head>
 <body>
 
-<!-- ===== DISCLAIMER ===== -->
+<!-- ===== DISCLAIMER + CONSENSO ===== -->
 <section class="screen" id="s-disclaimer">
   <h1 data-i18n="dis_title"></h1>
   <p class="lead" data-i18n="dis_1"></p>
@@ -99,6 +110,30 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <button class="btn" id="b-accept" data-i18n="dis_accept"></button>
 </section>
 
+<!-- ===== ONBOARDING ===== -->
+<section class="screen" id="s-onb">
+  <h1 data-i18n="onb_title"></h1>
+  <p data-i18n="onb_sub"></p>
+  <h2 data-i18n="onb_name"></h2>
+  <input class="txt" id="onb-name" autocomplete="given-name">
+  <h2 data-i18n="onb_level"></h2>
+  <div class="chips" id="onb-level">
+    <button data-v="beginner" data-i18n="lv_beginner"></button>
+    <button data-v="intermediate" data-i18n="lv_intermediate"></button>
+    <button data-v="advanced" data-i18n="lv_advanced"></button>
+  </div>
+  <h2 data-i18n="onb_goal"></h2>
+  <div class="chips" id="onb-goal">
+    <button data-v="relax" data-i18n="goal_relax"></button>
+    <button data-v="equalization" data-i18n="goal_eq"></button>
+    <button data-v="performance" data-i18n="goal_perf"></button>
+  </div>
+  <h2 data-i18n="onb_weekly"></h2>
+  <div class="row" style="border:0"><div class="lbl" data-i18n="onb_weekly_l"></div><div class="stepper" id="onb-weekly"></div></div>
+  <div style="flex:1"></div>
+  <button class="btn" id="b-onb-done" data-i18n="onb_done"></button>
+</section>
+
 <!-- ===== HOME / SETTINGS ===== -->
 <section class="screen" id="s-home">
   <div class="top">
@@ -108,6 +143,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
     </div>
     <div style="display:flex;gap:8px;align-items:center"><button class="mute" id="b-mute-home">🔊</button><button class="pill" id="b-lang">EN</button></div>
   </div>
+  <div style="margin:10px 0 4px"><button class="pill" id="b-account" style="width:100%;text-align:left"></button></div>
 
   <div class="grp grp-warm"><h2 data-i18n="set_warm"></h2>
   <div class="row"><div class="lbl" data-i18n="set_warm_in"></div><div class="stepper" data-k="warmIn" data-step="1" data-min="2" data-max="20"></div></div>
@@ -168,12 +204,58 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <button class="btn" id="b-save" data-i18n="save"></button>
 </section>
 
+<!-- ===== PROSSIMA SESSIONE ===== -->
+<section class="screen" id="s-next">
+  <h1 data-i18n="nx_title"></h1>
+  <p data-i18n="nx_sub"></p>
+  <div class="chips" id="nx-mode">
+    <button data-v="easier" data-i18n="nx_easier"></button>
+    <button data-v="same" data-i18n="nx_same"></button>
+    <button data-v="harder" data-i18n="nx_harder"></button>
+  </div>
+  <div id="nx-steppers"></div>
+  <div class="sum" id="nx-total"></div>
+  <div style="flex:1"></div>
+  <button class="btn" id="b-nx-use" data-i18n="nx_use"></button>
+  <button class="btn ghost" id="b-nx-skip" data-i18n="nx_skip"></button>
+</section>
+
+<!-- ===== ACCOUNT / LOGIN ===== -->
+<section class="screen" id="s-account">
+  <div class="top"><h1 id="acc-title"></h1><button class="pill" id="b-acc-back" data-i18n="back"></button></div>
+  <div id="acc-guest">
+    <p class="lead" data-i18n="acc_guest_lead"></p>
+    <p data-i18n="acc_guest_sub"></p>
+    <button class="btn google" id="b-google"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.1C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.3 0 11.7-2.1 15.5-5.7l-7.5-5.8c-2.1 1.4-4.8 2.3-8 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span data-i18n="acc_google"></span></button>
+    <p class="tiny" id="acc-ios-hint" style="display:none" data-i18n="acc_ios_hint"></p>
+    <h2 data-i18n="acc_email_h"></h2>
+    <div id="acc-step-email">
+      <input class="txt" id="acc-email" type="email" inputmode="email" autocomplete="email" placeholder="nome@esempio.it">
+      <button class="btn" id="b-send-code" data-i18n="acc_send"></button>
+    </div>
+    <div id="acc-step-code" style="display:none">
+      <p id="acc-sent-to"></p>
+      <input class="txt code" id="acc-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······">
+      <button class="btn" id="b-verify" data-i18n="acc_verify"></button>
+      <button class="link" id="b-code-back" data-i18n="acc_change_email" style="margin-top:10px"></button>
+    </div>
+    <div class="err" id="acc-err"></div>
+    <p class="tiny" style="margin-top:8px"><button class="link" id="b-acc-mode"></button></p>
+  </div>
+  <div id="acc-user" style="display:none">
+    <div class="note"><b id="acc-name"></b><br><span id="acc-email-shown" class="tiny"></span></div>
+    <div class="stats"><div><b id="st-sessions">0</b><span data-i18n="st_sessions"></span></div><div><b id="st-minutes">0</b><span data-i18n="st_minutes"></span></div><div><b id="st-week">0</b><span data-i18n="st_week"></span></div></div>
+    <p class="tiny" id="acc-sync"></p>
+    <button class="btn ghost" id="b-export" data-i18n="export"></button>
+    <button class="btn ghost" id="b-logout" data-i18n="acc_logout"></button>
+    <p class="tiny" style="margin-top:16px" data-i18n="acc_delete_info"></p>
+  </div>
+</section>
+
 <!-- ===== HISTORY ===== -->
 <section class="screen" id="s-history">
   <div class="top"><h1 data-i18n="history"></h1><button class="pill" id="b-hist-back" data-i18n="back"></button></div>
   <div id="hist-list"></div>
-  <div style="flex:1"></div>
-  <button class="btn ghost" id="b-export" data-i18n="export"></button>
 </section>
 
 <!-- ===== DIAGNOSTICS ===== -->
@@ -187,12 +269,17 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
 
 <script>
 /* ============================================================
-   Breathing Coach v0.1 — Orbita / Quota Zero
+   Breathing Coach v0.2 — Orbita / Quota Zero
    Motore: la sessione è resa come UNA traccia audio; il player è l'orologio.
+   v0.2: account (Google / codice email), ospite anonimo tracciato, sync, eventi,
+         onboarding, proposta sessione successiva.
    ============================================================ */
-const VERSION='0.1.5';
+const VERSION='0.2.0';
 const SCHEMA=1;
-const KEY={cfg:'bc.params.v1',sess:'bc.sessions.v1',acc:'bc.disclaimer.v1',lang:'bc.lang',athlete:'bc.athlete'};
+const PRIVACY_VERSION='2026-10-v1';
+const SUPA_URL='https://kiqumfsqcaukxazobszm.supabase.co';
+const SUPA_KEY='sb_publishable_9YiJUA45r62HfT5KTidEdw_N0QICtoC';
+const KEY={cfg:'bc.params.v1',sess:'bc.sessions.v1',acc:'bc.disclaimer.v1',lang:'bc.lang',athlete:'bc.athlete',onb:'bc.onboarding.v1',events:'bc.events.v1',nudge:'bc.nudge'};
 
 /* ---------- i18n ---------- */
 const T={
@@ -202,21 +289,39 @@ const T={
   dis_2:'Le apnee a polmoni vuoti possono causare capogiri o perdita di coscienza più rapidamente di quelle a polmoni pieni. Interrompi subito in caso di malessere.',
   dis_3:'Se hai patologie cardiache, respiratorie, neurologiche, o sei in gravidanza, consulta un medico prima di usare l’app. Non sostituisce un istruttore.',
   dis_4:'Proseguendo dichiari di usare l’app sotto la tua esclusiva responsabilità.',
-  dis_5:'Versione di test. I dati restano solo su questo dispositivo.',
+  dis_5:'Versione beta. I tuoi allenamenti vengono salvati sul tuo dispositivo e, se crei un account, su server in Unione Europea. Puoi esportarli o chiederne la cancellazione in qualsiasi momento. Accettando acconsenti al trattamento dei dati per il funzionamento dell’app.',
   dis_accept:'Ho letto e accetto',
+  onb_title:'Due cose su di te', onb_sub:'Servono per proporti sessioni adatte. Puoi cambiarle quando vuoi.',
+  onb_name:'Come ti chiami? (facoltativo)', onb_level:'Il tuo livello', onb_goal:'Obiettivo principale', onb_weekly:'Quanto vuoi allenarti?', onb_weekly_l:'Sessioni a settimana', onb_done:'Iniziamo',
+  lv_beginner:'Principiante', lv_intermediate:'Intermedio', lv_advanced:'Avanzato',
+  goal_relax:'Rilassamento', goal_eq:'Compensazione', goal_perf:'Prestazione',
   set_warm:'Riscaldamento', set_warm_in:'Inspirazione (s)', set_warm_out:'Espirazione (s)', set_warm_n:'Respiri',
   set_main:'Allenamento', set_in:'Inspirazione (s)', set_hf:'Apnea polmoni pieni (s)', set_out:'Espirazione (s)', set_he:'Apnea polmoni vuoti (s)', set_cycles:'Cicli',
   reminder:'Inspira dal naso. Espira dalla bocca con leggera resistenza.',
   start:'Inizia', test_sound:'Prova i suoni', history:'Storico', diag:'Diagnostica', back:'Indietro', stop:'Interrompi',
   fb_q:'Com’è andata?', fb_easy:'Facile', fb_right:'Giusta', fb_hard:'Difficile', save:'Salva', notes_ph:'Note (facoltative)',
+  nx_title:'Prossima sessione', nx_sub:'Proposta in base al tuo feedback. Ogni valore si regola da solo.', nx_easier:'Più facile', nx_same:'Uguale', nx_harder:'Più competitiva', nx_use:'Usa questa per la prossima', nx_skip:'Lascia come adesso',
   export:'Esporta dati (JSON)', copy:'Copia log', clear_log:'Svuota log', diag_help:'Fai una sessione, poi copia questo log e incollalo in chat.',
   preparing:'Preparazione…', warm:'Riscaldamento', inhale:'Inspira', exhale:'Espira', hold_full:'Trattieni', hold_empty:'Trattieni',
   lungs_full:'Polmoni pieni', lungs_empty:'Polmoni vuoti', cycle:'ciclo', left:'rimanente', last:'ultimo ciclo',
   done_title:'Allenamento completato', abort_title:'Allenamento interrotto',
-  done_sub:(c,t)=>`${c} cicli su ${t}, ${t2(t*1)}`, sum_total:(m)=>`Durata totale ${m}`,
+  sum_total:(m)=>`Durata totale ${m}`,
   hist_empty:'Nessuna sessione ancora. La prima la fai oggi.',
   sound_hint:'Ascolta: inspira, trattieni (pieni), espira, trattieni (vuoti), ultimo ciclo, fine.',
   proto:'Training respiratorio 4 fasi',
+  acc_guest:'Ospite · tocca per salvare i progressi', acc_title_guest:'Salva i tuoi progressi', acc_title_user:'Il tuo account',
+  acc_guest_lead:'Crea un account gratuito: i tuoi allenamenti restano al sicuro e li ritrovi su qualsiasi dispositivo.',
+  acc_guest_sub:'Nessuna password. Entri con Google o con un codice che ti mandiamo via email.',
+  acc_google:'Continua con Google', acc_ios_hint:'Dall’app aggiunta alla Home, Google potrebbe non riportarti qui: in quel caso usa il codice via email.',
+  acc_email_h:'Oppure via email', acc_send:'Inviami il codice', acc_verify:'Conferma', acc_change_email:'Cambia email',
+  acc_sent:(e)=>`Codice inviato a ${e}. Controlla anche lo spam.`,
+  acc_mode_new:'Ho già un account', acc_mode_existing:'Non ho un account, voglio crearlo',
+  acc_logout:'Esci', acc_delete_info:'Per cancellare l’account e tutti i dati scrivi a hello.delivery.spa@gmail.com dall’email con cui sei registrato.',
+  acc_synced:(n)=>n?`${n} sessioni in attesa di sincronizzazione`:'Tutto sincronizzato',
+  st_sessions:'sessioni', st_minutes:'minuti', st_week:'questa settimana',
+  nudge_title:'Salva i tuoi progressi',
+  err_email:'Inserisci un’email valida.', err_code:'Codice non valido o scaduto.', err_generic:'Qualcosa non ha funzionato. Riprova.', err_offline:'Sei offline: riprova con la connessione.',
+  welcome:(n)=>n?`Ciao ${n}`:'Account attivo',
  },
  en:{
   dis_title:'Before you start',
@@ -224,21 +329,39 @@ const T={
   dis_2:'Empty-lung holds can cause dizziness or loss of consciousness sooner than full-lung holds. Stop immediately if you feel unwell.',
   dis_3:'If you have heart, respiratory or neurological conditions, or are pregnant, ask a doctor before using the app. It does not replace an instructor.',
   dis_4:'By continuing you agree to use the app at your own risk.',
-  dis_5:'Test version. Data stays on this device only.',
+  dis_5:'Beta version. Your sessions are stored on your device and, if you create an account, on servers in the EU. You can export or request deletion at any time. By accepting you consent to data processing needed to run the app.',
   dis_accept:'I have read and accept',
+  onb_title:'Two things about you', onb_sub:'So we can suggest the right sessions. You can change them anytime.',
+  onb_name:'Your name (optional)', onb_level:'Your level', onb_goal:'Main goal', onb_weekly:'How often do you want to train?', onb_weekly_l:'Sessions per week', onb_done:'Let’s start',
+  lv_beginner:'Beginner', lv_intermediate:'Intermediate', lv_advanced:'Advanced',
+  goal_relax:'Relaxation', goal_eq:'Equalization', goal_perf:'Performance',
   set_warm:'Warm-up', set_warm_in:'Inhale (s)', set_warm_out:'Exhale (s)', set_warm_n:'Breaths',
   set_main:'Training', set_in:'Inhale (s)', set_hf:'Full-lung hold (s)', set_out:'Exhale (s)', set_he:'Empty-lung hold (s)', set_cycles:'Cycles',
   reminder:'Inhale through the nose. Exhale through the mouth with slight resistance.',
   start:'Start', test_sound:'Test sounds', history:'History', diag:'Diagnostics', back:'Back', stop:'Stop',
   fb_q:'How was it?', fb_easy:'Easy', fb_right:'Right', fb_hard:'Hard', save:'Save', notes_ph:'Notes (optional)',
+  nx_title:'Next session', nx_sub:'Suggested from your feedback. Adjust each value independently.', nx_easier:'Easier', nx_same:'Same', nx_harder:'Harder', nx_use:'Use this next time', nx_skip:'Keep current',
   export:'Export data (JSON)', copy:'Copy log', clear_log:'Clear log', diag_help:'Do a session, then copy this log and paste it in chat.',
   preparing:'Preparing…', warm:'Warm-up', inhale:'Inhale', exhale:'Exhale', hold_full:'Hold', hold_empty:'Hold',
   lungs_full:'Full lungs', lungs_empty:'Empty lungs', cycle:'cycle', left:'left', last:'last cycle',
   done_title:'Training complete', abort_title:'Training stopped',
-  done_sub:(c,t)=>`${c} of ${t} cycles`, sum_total:(m)=>`Total duration ${m}`,
+  sum_total:(m)=>`Total duration ${m}`,
   hist_empty:'No sessions yet. The first one is today.',
   sound_hint:'Listen: inhale, hold (full), exhale, hold (empty), last cycle, end.',
   proto:'4-phase breathing training',
+  acc_guest:'Guest · tap to save your progress', acc_title_guest:'Save your progress', acc_title_user:'Your account',
+  acc_guest_lead:'Create a free account: your sessions stay safe and follow you on any device.',
+  acc_guest_sub:'No password. Sign in with Google or with a code we email you.',
+  acc_google:'Continue with Google', acc_ios_hint:'From the Home Screen app, Google may not bring you back here: use the email code instead.',
+  acc_email_h:'Or by email', acc_send:'Send me the code', acc_verify:'Confirm', acc_change_email:'Change email',
+  acc_sent:(e)=>`Code sent to ${e}. Check spam too.`,
+  acc_mode_new:'I already have an account', acc_mode_existing:'I don’t have an account, create one',
+  acc_logout:'Sign out', acc_delete_info:'To delete your account and all data, write to hello.delivery.spa@gmail.com from your registered email.',
+  acc_synced:(n)=>n?`${n} sessions waiting to sync`:'Everything synced',
+  st_sessions:'sessions', st_minutes:'minutes', st_week:'this week',
+  nudge_title:'Save your progress',
+  err_email:'Enter a valid email.', err_code:'Invalid or expired code.', err_generic:'Something went wrong. Try again.', err_offline:'You are offline: retry when connected.',
+  welcome:(n)=>n?`Hi ${n}`:'Account active',
  }
 };
 let lang=ls(KEY.lang)||'it';
@@ -248,13 +371,15 @@ function t2(s){s=Math.round(s);const m=Math.floor(s/60),r=s%60;return m?`${m} mi
 /* ---------- storage (best effort) ---------- */
 function ls(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v);return true}catch(e){log('storage-error',e.message);return false}}
+function lsJ(k,d){try{return JSON.parse(ls(k))??d}catch(e){return d}}
 function uuid(){return crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c=='x'?r:(r&3|8)).toString(16)})}
-let athleteId=ls(KEY.athlete);if(!athleteId){athleteId=uuid();lsSet(KEY.athlete,athleteId)}
+let deviceId=ls(KEY.athlete);if(!deviceId){deviceId=uuid();lsSet(KEY.athlete,deviceId)}
 
 /* ---------- protocol (dati, non codice) ---------- */
 const PROTOCOL={
   id:'breathing-4phase-training', exerciseId:'breathing', nameKey:'proto', schemaVersion:SCHEMA,
   params:{warmIn:6,warmOut:6,warmReps:5,inhale:10,holdFull:20,exhale:10,holdEmpty:10,cycles:6},
+  limits:{warmIn:[2,20,1],warmOut:[2,20,1],warmReps:[0,10,1],inhale:[2,60,1],holdFull:[0,600,5],exhale:[2,60,1],holdEmpty:[0,300,5],cycles:[1,30,1]},
   blocks:[
     {kind:'warmup',repeat:'warmReps',phases:[
       {type:'inhale',duration:{param:'warmIn'},cue:'inhale'},
@@ -266,11 +391,10 @@ const PROTOCOL={
       {type:'hold_empty',duration:{param:'holdEmpty'},cue:'hold_empty'}]}
   ]
 };
-let params=Object.assign({},PROTOCOL.params,JSON.parse(ls(KEY.cfg)||'{}'));
+let params=Object.assign({},PROTOCOL.params,lsJ(KEY.cfg,{}));
 
-/* Timeline: elenco di segmenti con inizio/fine assoluti in secondi */
 function buildTimeline(p){
-  const segs=[];let tt=0;const LEAD=2; // 2 s di preparazione prima del primo segnale
+  const segs=[];let tt=0;const LEAD=2;
   tt+=LEAD;
   for(const b of PROTOCOL.blocks){
     const reps=p[b.repeat];
@@ -285,12 +409,8 @@ function buildTimeline(p){
   return {segs,total:tt};
 }
 
-/* ---------- audio: rendering della traccia ---------- */
-const SR=44100; // frequenza nativa iOS: nessun ricampionamento
-/* Sintesi in puro JavaScript (niente OfflineAudioContext: su iOS produce rumore).
-   Campanella: fondamentale + 2ª armonica, attacco 30 ms, decadimento esponenziale. */
-/* Toni della v0.1 (glissando, beep, nota bassa, accordo), sintetizzati in JS.
-   Inviluppo: attacco 20 ms, rilascio 60 ms, come in origine. */
+/* ---------- audio: sintesi in puro JS a 44.1 kHz ---------- */
+const SR=44100;
 function toneSamples(f0,f1,dur,gain=.6,type='sine'){
   const n=Math.round(dur*SR),out=new Float32Array(n);let ph=0;const A=.02,R=.06,k=Math.log(f1/f0);
   for(let i=0;i<n;i++){const t=i/SR;const f=f1===f0?f0:f0*Math.exp(k*t/dur);ph+=2*Math.PI*f/SR;
@@ -300,21 +420,17 @@ function toneSamples(f0,f1,dur,gain=.6,type='sine'){
 }
 function mix(track,t0,samples){let o=Math.round(t0*SR);const n=Math.min(samples.length,track.length-o);for(let i=0;i<n;i++)track[o+i]+=samples[i]}
 const tone=(tr,t,f0,f1,d,g,ty)=>mix(tr,t,toneSamples(f0,f1,d,g,ty));
-/* Segnali: distinti per forma, non solo per altezza */
 const CUES={
-  inhale:(tr,t)=>tone(tr,t,392,784,.7),                                        // salita
-  exhale:(tr,t)=>tone(tr,t,784,392,.7),                                        // discesa
-  hold_full:(tr,t)=>{tone(tr,t,880,880,.18);tone(tr,t+.26,880,880,.18)},       // 2 beep acuti
-  hold_empty:(tr,t)=>tone(tr,t,262,262,.5,.7,'triangle'),                      // 1 nota bassa lunga
-  last:(tr,t)=>{for(let i=0;i<3;i++)tone(tr,t+i*.22,1047,1047,.12,.5)},         // 3 beep: ultimo ciclo
-  end:(tr,t)=>{tone(tr,t,523,523,1.2,.4);tone(tr,t,659,659,1.2,.35);tone(tr,t,784,784,1.2,.3)}, // accordo
+  inhale:(tr,t)=>tone(tr,t,392,784,.7),
+  exhale:(tr,t)=>tone(tr,t,784,392,.7),
+  hold_full:(tr,t)=>{tone(tr,t,880,880,.18);tone(tr,t+.26,880,880,.18)},
+  hold_empty:(tr,t)=>tone(tr,t,262,262,.5,.7,'triangle'),
+  last:(tr,t)=>{for(let i=0;i<3;i++)tone(tr,t+i*.22,1047,1047,.12,.5)},
+  end:(tr,t)=>{tone(tr,t,523,523,1.2,.4);tone(tr,t,659,659,1.2,.35);tone(tr,t,784,784,1.2,.3)},
 };
-function renderCues(totalSec,fn){
-  const track=new Float32Array(Math.ceil(totalSec*SR));fn(track);
-  return URL.createObjectURL(wavBlob(track));
-}
+function renderCues(totalSec,fn){const track=new Float32Array(Math.ceil(totalSec*SR));fn(track);return URL.createObjectURL(wavBlob(track))}
 async function renderTrack(tl){
-  await new Promise(r=>setTimeout(r,0)); // lascia disegnare "Preparazione…"
+  await new Promise(r=>setTimeout(r,0));
   return renderCues(tl.total+3,track=>{
     for(const s of tl.segs){
       if(s.block==='warmup'){ if(s.type==='inhale') CUES.inhale(track,s.start); else CUES.exhale(track,s.start); }
@@ -332,7 +448,6 @@ function wavBlob(ch){
   const out=new Int16Array(ab,44,n);for(let i=0;i<n;i++){const s=Math.max(-1,Math.min(1,ch[i]*k));out[i]=s<0?s*32768:s*32767}
   return new Blob([ab],{type:'audio/wav'});
 }
-/* silenzio reale di 0,3 s (un WAV vuoto blocca play() su iOS) */
 function silenceWav(sec){const n=Math.round(SR*sec),ab=new ArrayBuffer(44+n*2),v=new DataView(ab);const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,SR,true);v.setUint32(28,SR*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);return URL.createObjectURL(new Blob([ab],{type:'audio/wav'}))}
 const SILENCE=silenceWav(0.3);
 function withTimeout(p,ms,label){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+' timeout '+ms+'ms')),ms))])}
@@ -344,8 +459,9 @@ const audio=new Audio();audio.setAttribute('playsinline','');audio.preload='auto
 const LOG=[];
 function log(ev,d){const line=`${new Date().toISOString().slice(11,23)} ${ev}${d!==undefined?' '+(typeof d==='string'?d:JSON.stringify(d)):''}`;LOG.push(line);if(LOG.length>400)LOG.shift();const o=document.getElementById('diag-out');if(o&&document.getElementById('s-diag').classList.contains('on'))o.textContent=LOG.join('\n')}
 function env(){const n=navigator;return {ua:n.userAgent,standalone:!!n.standalone||matchMedia('(display-mode: standalone)').matches,wakeLock:'wakeLock'in n,vibrate:'vibrate'in n,mediaSession:'mediaSession'in n,synth:'js',screen:`${screen.width}x${screen.height}`,version:VERSION}}
+const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
 log('env',env());
-document.addEventListener('visibilitychange',()=>{log('visibility',document.visibilityState);if(document.visibilityState==='visible'&&run)acquireWake()});
+document.addEventListener('visibilitychange',()=>{log('visibility',document.visibilityState);if(document.visibilityState==='visible'){if(run)acquireWake();else syncAll()}});
 ['play','playing','pause','ended','stalled','suspend','waiting','error','seeking'].forEach(e=>audio.addEventListener(e,()=>log('audio:'+e,e==='error'&&audio.error?audio.error.code:Math.round(audio.currentTime*100)/100)));
 
 /* ---------- wake lock ---------- */
@@ -353,8 +469,162 @@ let wake=null;
 async function acquireWake(){try{if(!('wakeLock'in navigator))return log('wake','unsupported');wake=await navigator.wakeLock.request('screen');log('wake','acquired');wake.addEventListener('release',()=>log('wake','released'))}catch(e){log('wake-error',e.message)}}
 async function releaseWake(){try{if(wake){await wake.release();wake=null}}catch(e){}}
 
+/* ============================================================
+   BACKEND: Supabase (auth, profilo, sessioni, eventi)
+   ============================================================ */
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+let user=null;        // auth user corrente (anonimo o registrato)
+let loginKey=null;    // evita doppio afterLogin
+let profile=lsJ(KEY.onb,null);
+
+async function ensureUser(){
+  if(!sb)return null;
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session){user=session.user;if(!user.is_anonymous)loginKey=user.id+':u';log('auth:session',{id:user.id.slice(0,8),anon:!!user.is_anonymous});return user}
+    if(!navigator.onLine)return null;
+    const {data,error}=await sb.auth.signInAnonymously();
+    if(error)throw error;
+    user=data.user;log('auth:anonymous',{id:user.id.slice(0,8)});
+    track('first_open');
+    return user;
+  }catch(e){log('auth:error',e.message);return null}
+}
+function isGuest(){return !user||!!user.is_anonymous}
+function userLabel(){if(!user||user.is_anonymous)return null;return (profile&&profile.display_name)||user.user_metadata?.full_name||user.user_metadata?.name||user.email||'—'}
+
+/* --- profilo --- */
+async function saveProfile(p){
+  profile=Object.assign({},profile||{},p);lsSet(KEY.onb,JSON.stringify(profile));
+  if(!sb||!user)return;
+  try{
+    const row={user_id:user.id,display_name:profile.display_name||null,level:profile.level||null,goal:profile.goal||null,weekly_target:profile.weekly_target||3,locale:lang,
+      consent_privacy_version:profile.consent_version||PRIVACY_VERSION,consent_at:profile.consent_at||new Date().toISOString(),onboarding_done:!!profile.onboarding_done,updated_at:new Date().toISOString()};
+    const {error}=await sb.from('profiles').upsert(row,{onConflict:'user_id'});
+    if(error)throw error;log('profile:saved');
+  }catch(e){log('profile:error',e.message)}
+}
+async function registerDevice(){
+  if(!sb||!user)return;
+  try{const e=env();await sb.from('devices').upsert({id:deviceId,user_id:user.id,ua:e.ua.slice(0,200),platform:isIOS?'ios':/Android/.test(e.ua)?'android':'other',standalone:e.standalone,last_seen:new Date().toISOString()},{onConflict:'id'})}catch(e){log('device:error',e.message)}
+}
+
+/* --- eventi (coda locale, flush quando possibile) --- */
+function track(event,props){
+  const q=lsJ(KEY.events,[]);q.push({event,props:props||{},ts:new Date().toISOString(),device_id:deviceId,app_version:VERSION});
+  if(q.length>500)q.splice(0,q.length-500);lsSet(KEY.events,JSON.stringify(q));
+  flushEvents();
+}
+let flushing=false;
+async function flushEvents(){
+  if(flushing||!sb||!user||!navigator.onLine)return;
+  const q=lsJ(KEY.events,[]);if(!q.length)return;flushing=true;
+  try{
+    const rows=q.map(e=>({user_id:user.id,device_id:e.device_id,event:e.event,props:e.props,app_version:e.app_version,ts:e.ts}));
+    const {error}=await sb.from('events').insert(rows);
+    if(error)throw error;
+    const rest=lsJ(KEY.events,[]).slice(q.length);lsSet(KEY.events,JSON.stringify(rest));log('events:flushed',q.length);
+  }catch(e){log('events:error',e.message)}finally{flushing=false}
+}
+
+/* --- sessioni: locale → cloud --- */
+function toRow(r){return {id:r.id,user_id:user.id,device_id:deviceId,protocol_id:r.protocolId,exercise_id:r.exerciseId,schema_version:r.schemaVersion||SCHEMA,
+  started_at:r.startedAt,ended_at:r.endedAt,status:r.status,abort_reason:r.abortReason,planned_params:r.plannedParams,actual_params:r.actualParams,
+  cycles_completed:r.cyclesCompleted,elapsed_sec:r.elapsedSec,planned_sec:r.plannedSec,feedback:r.feedback,notes:r.notes,next_params:r.nextParams,diag:r.diag}}
+function fromRow(x){return {id:x.id,schemaVersion:x.schema_version,protocolId:x.protocol_id,exerciseId:x.exercise_id,startedAt:x.started_at,endedAt:x.ended_at,status:x.status,abortReason:x.abort_reason,
+  plannedParams:x.planned_params,actualParams:x.actual_params,cyclesCompleted:x.cycles_completed,elapsedSec:x.elapsed_sec,plannedSec:x.planned_sec,feedback:x.feedback,notes:x.notes,nextParams:x.next_params,diag:x.diag,synced:true,owner:x.user_id}}
+let syncing=false;
+async function pushSessions(){
+  if(syncing||!sb||!user||!navigator.onLine)return;
+  const all=lsJ(KEY.sess,[]);const pend=all.filter(r=>!r.synced&&(!r.owner||r.owner===user.id));
+  if(!pend.length)return;syncing=true;
+  try{
+    const {error}=await sb.from('sessions').upsert(pend.map(toRow),{onConflict:'id'});
+    if(error)throw error;
+    const ids=new Set(pend.map(r=>r.id));all.forEach(r=>{if(ids.has(r.id)){r.synced=true;r.owner=user.id}});lsSet(KEY.sess,JSON.stringify(all));
+    log('sessions:pushed',pend.length);
+  }catch(e){log('sessions:push-error',e.message)}finally{syncing=false;renderAccountPill()}
+}
+async function pullSessions(){
+  if(!sb||!user||!navigator.onLine)return;
+  try{
+    const {data,error}=await sb.from('sessions').select('*').order('started_at',{ascending:true}).limit(1000);
+    if(error)throw error;
+    const all=lsJ(KEY.sess,[]);const byId=new Map(all.map(r=>[r.id,r]));
+    let added=0;for(const x of data){if(!byId.has(x.id)){all.push(fromRow(x));added++}else{byId.get(x.id).synced=true;byId.get(x.id).owner=x.user_id}}
+    all.sort((a,b)=>a.startedAt<b.startedAt?-1:1);lsSet(KEY.sess,JSON.stringify(all));log('sessions:pulled',{total:data.length,added});
+  }catch(e){log('sessions:pull-error',e.message)}
+}
+async function syncAll(){await flushEvents();await pushSessions()}
+window.addEventListener('online',syncAll);
+
+/* --- login / account --- */
+let accMode='new'; // new = ospite che crea l'account | existing = accedo a un account già esistente
+let pendingEmail=null;
+function accErr(k){$('acc-err').textContent=k?t(k):''}
+async function sendCode(){
+  const email=$('acc-email').value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return accErr('err_email');
+  if(!navigator.onLine)return accErr('err_offline');
+  accErr('');$('b-send-code').disabled=true;
+  try{
+    let error;
+    if(accMode==='new'&&isGuest()&&user){({error}=await sb.auth.updateUser({email}));pendingType='email_change'}
+    else{({error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}}));pendingType='email'}
+    if(error)throw error;
+    pendingEmail=email;$('acc-sent-to').textContent=T[lang].acc_sent(email);
+    $('acc-step-email').style.display='none';$('acc-step-code').style.display='block';setTimeout(()=>$('acc-code').focus(),50);
+    track('login_code_sent',{mode:accMode});
+  }catch(e){log('auth:otp-error',e.message);
+    if(/already|registered|exists/i.test(e.message)){accMode='existing';renderAccMode();return sendCode()}
+    accErr('err_generic');$('acc-err').textContent+=' ('+e.message+')'}
+  finally{$('b-send-code').disabled=false}
+}
+let pendingType='email';
+async function verifyCode(){
+  const token=$('acc-code').value.replace(/\D/g,'');
+  if(token.length!==6)return accErr('err_code');
+  accErr('');$('b-verify').disabled=true;
+  try{
+    const {data,error}=await sb.auth.verifyOtp({email:pendingEmail,token,type:pendingType});
+    if(error)throw error;
+    user=data.user||(await sb.auth.getUser()).data.user;
+    await afterLogin('email');
+  }catch(e){log('auth:verify-error',e.message);accErr('err_code')}
+  finally{$('b-verify').disabled=false}
+}
+async function googleLogin(){
+  if(!navigator.onLine)return accErr('err_offline');
+  const redirectTo=location.origin+location.pathname;
+  try{
+    track('login_google_start',{guest:isGuest()});
+    if(isGuest()&&user){
+      const {error}=await sb.auth.linkIdentity({provider:'google',options:{redirectTo}});
+      if(error){log('auth:link-error',error.message);await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo}})}
+    }else{
+      const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo}});if(error)throw error;
+    }
+  }catch(e){log('auth:google-error',e.message);accErr('err_generic')}
+}
+async function afterLogin(method){
+  const key=user.id+':'+(user.is_anonymous?'a':'u');if(loginKey===key)return;loginKey=key;
+  log('auth:login',{method,id:user.id.slice(0,8)});
+  track('login_success',{method});
+  if(profile&&!profile.display_name&&(user.user_metadata?.full_name||user.user_metadata?.name))profile.display_name=user.user_metadata.full_name||user.user_metadata.name;
+  await saveProfile(profile||{});
+  await registerDevice();
+  await pullSessions();await pushSessions();await flushEvents();
+  renderAccountPill();renderAccount();show('s-home');
+}
+async function logout(){
+  track('logout');await flushEvents();
+  try{await sb.auth.signOut()}catch(e){}
+  user=null;lsSet(KEY.sess,JSON.stringify(lsJ(KEY.sess,[]).filter(r=>!r.synced)));
+  await ensureUser();renderAccountPill();show('s-home');
+}
+
 /* ---------- session engine ---------- */
-let run=null; // {tl, plannedParams, startedAt, wallStart, raf, lastSeg, url}
+let run=null;
 const $=id=>document.getElementById(id);
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));window.scrollTo(0,0)}
 
@@ -363,14 +633,12 @@ async function startSession(){
   const tl=buildTimeline(params);
   run={tl,plannedParams:{...params},id:uuid(),startedAt:new Date().toISOString(),lastSeg:-1,url:null,phaseMarks:[]};
   log('session:start',{id:run.id,total:tl.total,params});
-  // 1) sblocco audio nel gesto
+  track('session_start',{total:tl.total,params});
   try{audio.src=SILENCE;await withTimeout(audio.play(),1500,'unlock');log('audio:unlocked')}catch(e){log('audio:unlock-failed',e.message)}
   show('s-session');setPhaseUI(null);$('ph').textContent=t('preparing');
-  // 2) rendering traccia
   const t0=performance.now();
   try{run.url=await withTimeout(renderTrack(tl),20000,'render');log('track:rendered',{ms:Math.round(performance.now()-t0),sec:tl.total})}
   catch(e){log('track:error',e.message);return abort('render-error')}
-  // 3) play
   audio.src=run.url;
   try{await withTimeout(audio.play(),5000,'play');run.wallStart=Date.now();log('audio:started')}catch(e){log('audio:play-failed',e.message);return abort('play-error')}
   acquireWake();
@@ -401,11 +669,12 @@ function setPhaseUI(s){
   root.style.background=col;root.classList.add('dark');
   $('ph').textContent=(s.block==='warmup'?t('warm')+' · ':'')+t(s.type);
   $('lg').textContent=s.type==='hold_full'?t('lungs_full'):s.type==='hold_empty'?t('lungs_empty'):'';
-  $('m-cycle').textContent=s.block==='warmup'?`${s.rep}/${s.reps}`:`${s.rep}/${s.reps}`;
+  $('m-cycle').textContent=`${s.rep}/${s.reps}`;
   $('m-cycle-l').textContent=s.block==='warmup'?t('warm'):(s.rep===s.reps&&s.reps>1?t('last'):t('cycle'));
   $('m-left-l').textContent=t('left');
 }
 function completedCycles(){const ct=audio.currentTime;const main=run.tl.segs.filter(s=>s.block==='main');let c=0;for(const s of main){if(ct>=s.end&&s.type==='hold_empty')c=s.rep;else if(ct>=s.end&&params.holdEmpty<=0&&s.type==='exhale')c=s.rep}return c}
+function currentPhase(){const ct=audio.currentTime;const s=run.tl.segs.find(s=>ct>=s.start&&ct<s.end);return s?{block:s.block,type:s.type,rep:s.rep}:null}
 function abort(reason){log('session:abort',reason);finish(true,reason)}
 function finish(aborted,reason){
   if(!run)return;
@@ -414,15 +683,16 @@ function finish(aborted,reason){
   const cyc=aborted?completedCycles():params.cycles;
   const drifts=run.phaseMarks;const maxDrift=drifts.length?Math.max(...drifts.map(Math.abs)):0;
   run.record={
-    id:run.id,schemaVersion:SCHEMA,athleteId,protocolId:PROTOCOL.id,exerciseId:PROTOCOL.exerciseId,
+    id:run.id,schemaVersion:SCHEMA,protocolId:PROTOCOL.id,exerciseId:PROTOCOL.exerciseId,
     startedAt:run.startedAt,endedAt:new Date().toISOString(),
     plannedParams:run.plannedParams,actualParams:run.plannedParams,
     status:aborted?'aborted':'completed',abortReason:aborted?(reason||'user'):null,
     cyclesCompleted:cyc,elapsedSec:Math.round(ct),plannedSec:Math.round(run.tl.total),
-    feedback:null,notes:'',nextParams:null,
+    feedback:null,notes:'',nextParams:null,synced:false,owner:user?user.id:null,
     diag:{maxDriftMs:maxDrift,phases:drifts.length,standalone:env().standalone,wake:'wakeLock'in navigator}
   };
   log('session:end',{status:run.record.status,cycles:cyc,elapsed:Math.round(ct),maxDriftMs:maxDrift});
+  track(aborted?'session_abort':'session_complete',{reason:aborted?reason:undefined,phase:aborted?currentPhase():undefined,cycles:cyc,elapsed:Math.round(ct),planned:Math.round(run.tl.total)});
   try{audio.pause();audio.onended=null}catch(e){}
   if(run.url)URL.revokeObjectURL(run.url);
   releaseWake();
@@ -437,12 +707,49 @@ document.querySelectorAll('.fb button').forEach(b=>b.onclick=()=>{fbChoice=b.dat
 $('b-save').onclick=()=>{
   if(!run||!run.record)return show('s-home');
   run.record.feedback=fbChoice;run.record.notes=$('fb-notes').value.trim();
-  run.record.nextParams={...params}; // v0.2: proposta ±
-  const all=JSON.parse(ls(KEY.sess)||'[]');all.push(run.record);lsSet(KEY.sess,JSON.stringify(all));
-  log('session:saved',run.record.id);run=null;show('s-home');
+  track('feedback_given',{feedback:fbChoice,hasNotes:!!run.record.notes});
+  openNext();
 };
 $('b-stop').onclick=()=>abort('user');
 $('b-start').onclick=()=>startSession().catch(e=>{log('session:crash',e.message);$('b-start').disabled=false;if(run)abort('crash');else show('s-home')});
+
+/* ---------- prossima sessione (proposta ±) ---------- */
+let nx={mode:'same',p:null};
+const NX_KEYS=['cycles','inhale','holdFull','exhale','holdEmpty'];
+function proposal(mode,base){
+  const p={...base};const L=PROTOCOL.limits;
+  const d=mode==='easier'?-1:mode==='harder'?1:0;
+  p.holdFull=clamp(base.holdFull+5*d,L.holdFull);p.holdEmpty=clamp(base.holdEmpty+5*d,L.holdEmpty);
+  return p;
+}
+function clamp(v,[min,max]){return Math.max(min,Math.min(max,v))}
+function openNext(){
+  const fb=run.record.feedback;nx.mode=fb==='hard'?'easier':fb==='easy'?'harder':'same';
+  nx.p=proposal(nx.mode,run.plannedParams);renderNext();show('s-next');
+}
+function renderNext(){
+  document.querySelectorAll('#nx-mode button').forEach(b=>b.classList.toggle('sel',b.dataset.v===nx.mode));
+  const labels={cycles:t('set_cycles'),inhale:t('set_in'),holdFull:t('set_hf'),exhale:t('set_out'),holdEmpty:t('set_he')};
+  $('nx-steppers').innerHTML=NX_KEYS.map(k=>{const cur=run.plannedParams[k],v=nx.p[k],diff=v-cur;
+    return `<div class="row"><div class="lbl">${labels[k]}</div><div class="stepper" data-k="${k}"><button>−</button><span class="v">${v}<small>${diff?(diff>0?'+':'')+diff:'='}</small></span><button>+</button></div></div>`}).join('');
+  document.querySelectorAll('#nx-steppers .stepper').forEach(el=>{const k=el.dataset.k,[min,max,step]=PROTOCOL.limits[k];const [m,,p]=el.children;
+    m.onclick=()=>{nx.p[k]=clamp(nx.p[k]-step,[min,max]);renderNext()};p.onclick=()=>{nx.p[k]=clamp(nx.p[k]+step,[min,max]);renderNext()}});
+  const full={...run.plannedParams,...nx.p};$('nx-total').textContent=T[lang].sum_total(t2(buildTimeline(full).total));
+}
+document.querySelectorAll('#nx-mode button').forEach(b=>b.onclick=()=>{nx.mode=b.dataset.v;nx.p=proposal(nx.mode,run.plannedParams);renderNext()});
+function finalizeSession(nextParams,accepted){
+  run.record.nextParams=nextParams;
+  const all=lsJ(KEY.sess,[]);all.push(run.record);lsSet(KEY.sess,JSON.stringify(all));
+  log('session:saved',run.record.id);track('next_params',{accepted,mode:nx.mode,changed:NX_KEYS.filter(k=>nextParams[k]!==run.plannedParams[k])});
+  if(accepted){params={...params,...nextParams};save();track('params_changed',{source:'proposal'})}
+  const completed=all.filter(r=>r.status==='completed').length;
+  run=null;pushSessions();
+  if(isGuest()&&shouldNudge(completed))return openAccount(true);
+  show('s-home');
+}
+$('b-nx-use').onclick=()=>finalizeSession({...nx.p},true);
+$('b-nx-skip').onclick=()=>finalizeSession({...run.plannedParams},false);
+function shouldNudge(completed){const n=lsJ(KEY.nudge,{count:0});if(completed>=1&&(n.count===0||completed%3===0)){n.count++;lsSet(KEY.nudge,JSON.stringify(n));return true}return false}
 
 /* ---------- mute ---------- */
 let muted=ls('bc.muted')==='1';
@@ -459,36 +766,93 @@ $('b-testsound').onclick=async()=>{
 };
 
 /* ---------- settings UI ---------- */
+let paramsDirty=null;
 function renderSettings(){
-  document.querySelectorAll('.stepper').forEach(el=>{
+  document.querySelectorAll('#s-home .stepper').forEach(el=>{
     const k=el.dataset.k,step=+el.dataset.step,min=+el.dataset.min,max=+el.dataset.max;
     el.innerHTML=`<button aria-label="-">−</button><span class="v">${params[k]}</span><button aria-label="+">+</button>`;
     const [m,,p]=el.children;
-    m.onclick=()=>{params[k]=Math.max(min,params[k]-step);save()};
-    p.onclick=()=>{params[k]=Math.min(max,params[k]+step);save()};
+    m.onclick=()=>{params[k]=Math.max(min,params[k]-step);save();manualChange()};
+    p.onclick=()=>{params[k]=Math.min(max,params[k]+step);save();manualChange()};
   });
   const tl=buildTimeline(params);
   $('sum-total').textContent=T[lang].sum_total(t2(tl.total));
   $('proto-name').textContent=t('proto');
 }
+function manualChange(){clearTimeout(paramsDirty);paramsDirty=setTimeout(()=>track('params_changed',{source:'manual',params}),1500)}
 function save(){lsSet(KEY.cfg,JSON.stringify(params));renderSettings()}
 
-/* ---------- history ---------- */
-$('b-history').onclick=()=>{
-  const all=JSON.parse(ls(KEY.sess)||'[]').slice().reverse();
-  $('hist-list').innerHTML=all.length?all.map(r=>{
-    const d=new Date(r.startedAt),p=r.plannedParams,fb={easy:'😄',right:'😐',hard:'😣'}[r.feedback]||'·';
-    return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> ${fb} — ${p.inhale}/${p.holdFull}/${p.exhale}/${p.holdEmpty} × ${r.cyclesCompleted}/${p.cycles} · ${t2(r.elapsedSec)}${r.status==='aborted'?' · '+t('abort_title').toLowerCase():''}${r.notes?'<br>'+r.notes.replace(/</g,'&lt;'):''}</div>`
-  }).join(''):`<p>${t('hist_empty')}</p>`;
-  show('s-history');
+/* ---------- onboarding ---------- */
+const onb={display_name:'',level:null,goal:null,weekly_target:3};
+function renderOnb(){
+  document.querySelectorAll('#onb-level button').forEach(b=>b.classList.toggle('sel',b.dataset.v===onb.level));
+  document.querySelectorAll('#onb-goal button').forEach(b=>b.classList.toggle('sel',b.dataset.v===onb.goal));
+  const el=$('onb-weekly');el.innerHTML=`<button>−</button><span class="v">${onb.weekly_target}</span><button>+</button>`;
+  el.children[0].onclick=()=>{onb.weekly_target=Math.max(1,onb.weekly_target-1);renderOnb()};el.children[2].onclick=()=>{onb.weekly_target=Math.min(7,onb.weekly_target+1);renderOnb()};
+}
+document.querySelectorAll('#onb-level button').forEach(b=>b.onclick=()=>{onb.level=b.dataset.v;renderOnb()});
+document.querySelectorAll('#onb-goal button').forEach(b=>b.onclick=()=>{onb.goal=b.dataset.v;renderOnb()});
+$('b-onb-done').onclick=async()=>{
+  onb.display_name=$('onb-name').value.trim();
+  await saveProfile({...onb,onboarding_done:true,consent_version:PRIVACY_VERSION,consent_at:profile?.consent_at||new Date().toISOString()});
+  track('onboarding_done',{level:onb.level,goal:onb.goal,weekly:onb.weekly_target});
+  renderAccountPill();show('s-home');
 };
-$('b-hist-back').onclick=()=>show('s-home');
+
+/* ---------- account UI ---------- */
+function renderAccountPill(){
+  const b=$('b-account');if(!b)return;
+  if(isGuest()){b.textContent=t('acc_guest');b.classList.remove('acc')}
+  else{const pend=lsJ(KEY.sess,[]).filter(r=>!r.synced).length;b.textContent=(userLabel()||'')+(pend?' · ⟳':' · ✓');b.classList.add('acc')}
+}
+function renderAccMode(){$('b-acc-mode').textContent=accMode==='new'?t('acc_mode_new'):t('acc_mode_existing')}
+function openAccount(nudge){
+  accErr('');$('acc-step-email').style.display='block';$('acc-step-code').style.display='none';$('acc-code').value='';
+  const guest=isGuest();
+  $('acc-title').textContent=nudge?t('nudge_title'):(guest?t('acc_title_guest'):t('acc_title_user'));
+  $('acc-guest').style.display=guest?'block':'none';$('acc-user').style.display=guest?'none':'block';
+  $('acc-ios-hint').style.display=(isIOS&&env().standalone)?'block':'none';
+  accMode='new';renderAccMode();
+  if(!guest)renderAccount();
+  track('account_screen',{guest,nudge:!!nudge});
+  show('s-account');
+}
+function renderAccount(){
+  if(isGuest())return;
+  $('acc-name').textContent=T[lang].welcome(userLabel());$('acc-email-shown').textContent=user.email||'';
+  const all=lsJ(KEY.sess,[]).filter(r=>r.status==='completed');
+  const mins=Math.round(all.reduce((a,r)=>a+(r.elapsedSec||0),0)/60);
+  const wk=new Date();wk.setDate(wk.getDate()-wk.getDay()+1);wk.setHours(0,0,0,0);
+  $('st-sessions').textContent=all.length;$('st-minutes').textContent=mins;$('st-week').textContent=all.filter(r=>new Date(r.startedAt)>=wk).length;
+  $('acc-sync').textContent=T[lang].acc_synced(lsJ(KEY.sess,[]).filter(r=>!r.synced).length);
+}
+$('b-account').onclick=()=>openAccount(false);
+$('b-acc-back').onclick=()=>show('s-home');
+$('b-send-code').onclick=sendCode;
+$('b-verify').onclick=verifyCode;
+$('acc-code').addEventListener('input',e=>{if(e.target.value.replace(/\D/g,'').length===6)verifyCode()});
+$('b-code-back').onclick=()=>{$('acc-step-email').style.display='block';$('acc-step-code').style.display='none';accErr('')};
+$('b-google').onclick=googleLogin;
+$('b-acc-mode').onclick=()=>{accMode=accMode==='new'?'existing':'new';renderAccMode()};
+$('b-logout').onclick=logout;
 $('b-export').onclick=()=>{
-  const data={exportedAt:new Date().toISOString(),version:VERSION,schemaVersion:SCHEMA,athleteId,params,sessions:JSON.parse(ls(KEY.sess)||'[]')};
-  const txt=JSON.stringify(data,null,2);
+  const data={exportedAt:new Date().toISOString(),version:VERSION,schemaVersion:SCHEMA,userId:user?user.id:null,deviceId,profile,params,sessions:lsJ(KEY.sess,[])};
+  const txt=JSON.stringify(data,null,2);track('export');
   if(navigator.share){navigator.share({title:'Breathing Coach export',text:txt}).catch(()=>{})}
   else{navigator.clipboard?.writeText(txt);alert('JSON copiato / copied')}
 };
+
+/* ---------- history ---------- */
+$('b-history').onclick=()=>{
+  const all=lsJ(KEY.sess,[]).slice().reverse();
+  $('hist-list').innerHTML=all.length?all.map(r=>{
+    const d=new Date(r.startedAt),p=r.plannedParams,fb={easy:'😄',right:'😐',hard:'😣'}[r.feedback]||'·';
+    return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> ${fb} — ${p.inhale}/${p.holdFull}/${p.exhale}/${p.holdEmpty} × ${r.cyclesCompleted}/${p.cycles} · ${t2(r.elapsedSec)}${r.status==='aborted'?' · '+t('abort_title').toLowerCase():''}${r.synced?'':' · ⟳'}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`
+  }).join(''):`<p>${t('hist_empty')}</p>`;
+  track('history_view',{count:all.length});
+  show('s-history');
+};
+$('b-hist-back').onclick=()=>show('s-home');
 
 /* ---------- diag UI ---------- */
 $('b-diag').onclick=()=>{$('diag-out').textContent=LOG.join('\n');show('s-diag')};
@@ -502,14 +866,32 @@ function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
   $('fb-notes').placeholder=t('notes_ph');$('b-lang').textContent=lang==='it'?'EN':'IT';
   $('ver').textContent=`Breathing Coach v${VERSION} · Orbita by Quota Zero`;
-  renderSettings();
+  renderSettings();renderAccountPill();renderAccMode();
 }
-$('b-lang').onclick=()=>{lang=lang==='it'?'en':'it';lsSet(KEY.lang,lang);applyLang()};
+$('b-lang').onclick=()=>{lang=lang==='it'?'en':'it';lsSet(KEY.lang,lang);applyLang();if(profile)saveProfile({})};
 
 /* ---------- boot ---------- */
-$('b-accept').onclick=()=>{lsSet(KEY.acc,new Date().toISOString());show('s-home')};
+$('b-accept').onclick=async()=>{
+  lsSet(KEY.acc,new Date().toISOString());
+  profile=Object.assign({},profile||{},{consent_version:PRIVACY_VERSION,consent_at:new Date().toISOString()});lsSet(KEY.onb,JSON.stringify(profile));
+  track('consent_accepted',{version:PRIVACY_VERSION});
+  renderOnb();show('s-onb');
+  await ensureUser();if(user){registerDevice();syncAll()}
+};
 applyLang();
-show(ls(KEY.acc)?'s-home':'s-disclaimer');
+(async()=>{
+  // migrazione record v0.1 (senza flag synced)
+  const all=lsJ(KEY.sess,[]);let mig=false;all.forEach(r=>{if(r.synced===undefined){r.synced=false;mig=true}});if(mig)lsSet(KEY.sess,JSON.stringify(all));
+  if(!ls(KEY.acc)){show('s-disclaimer')}
+  else if(!profile||!profile.onboarding_done){renderOnb();show('s-onb')}
+  else show('s-home');
+  if(ls(KEY.acc))await ensureUser(); else {const {data:{session}}=sb?await sb.auth.getSession():{data:{}};if(session)user=session.user}
+  if(sb)sb.auth.onAuthStateChange(async(ev,session)=>{log('auth:event',ev);if(session){user=session.user;if((ev==='SIGNED_IN'||ev==='USER_UPDATED')&&!user.is_anonymous){await afterLogin(user.app_metadata?.provider||'oauth')}}});
+  track('app_open',{standalone:env().standalone,lang});
+  renderAccountPill();
+  if(user){registerDevice();if(profile&&profile.onboarding_done)saveProfile({});await pullSessions();await syncAll()}
+  renderAccountPill();
+})();
 </script>
 </body>
 </html>
