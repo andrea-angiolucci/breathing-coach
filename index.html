@@ -21,7 +21,7 @@
   padding-bottom:env(safe-area-inset-bottom,0px);
   --bg:#061A2B; --bg2:#0B2A40; --ink:#EAF4F7; --ink2:#8FB1C2; --line:rgba(234,244,247,.14);
   --accent:#8FE0D2; --danger:#F08A7A;
-  --ph-inhale:#8FE0D2; --ph-hold_full:#F2C879; --ph-exhale:#7FB4F0; --ph-hold_empty:#C4A6EA; --ph-warm:#A9D3B5;
+  --ph-inhale:#8FE0D2; --ph-hold_full:#F2C879; --ph-exhale:#7FB4F0; --ph-hold_empty:#C4A6EA; --ph-warm:#A9D3B5; --ph-static:#79C9F2;
   --font:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
@@ -50,7 +50,12 @@ p.lead{color:var(--ink);font-size:16px}
 .row .lbl small{display:block;color:var(--ink2);font-size:12.5px;margin-top:2px}
 .grp{border-left:3px solid var(--c);padding-left:14px;margin-top:6px}
 .grp h2{color:var(--c);margin-top:6px}
-.grp-warm{--c:var(--ph-warm)}.grp-main{--c:var(--ph-hold_full)}
+.grp-warm{--c:var(--ph-warm)}.grp-main{--c:var(--ph-hold_full)}.grp-static{--c:var(--ph-static)}
+#s-static-run{padding:0;transition:background .9s ease}
+#s-static-run .sess{min-height:100vh;min-height:100dvh;cursor:pointer}
+#s-static-run .num{font-size:min(30vw,150px)}
+.chart{width:100%;height:auto;display:block;background:var(--bg2);border-radius:12px;padding:8px}
+.chart text{font-family:var(--font);font-size:10px;fill:var(--ink2)}
 .mute{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);font-size:20px;display:flex;align-items:center;justify-content:center}
 .sess .mute{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;border-color:rgba(4,19,29,.35)}
 .stepper{display:flex;align-items:center;gap:6px}
@@ -111,6 +116,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <p class="tiny" data-i18n="dis_5"></p>
   <div style="flex:1"></div>
   <button class="btn" id="b-accept" data-i18n="dis_accept"></button>
+  <p class="tiny" style="text-align:center;margin-top:14px"><button class="link" id="b-have-account" data-i18n="have_account"></button></p>
 </section>
 
 <!-- ===== ONBOARDING ===== -->
@@ -135,6 +141,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <div class="row" style="border:0"><div class="lbl" data-i18n="onb_weekly_l"></div><div class="stepper" id="onb-weekly"></div></div>
   <div style="flex:1"></div>
   <button class="btn" id="b-onb-done" data-i18n="onb_done"></button>
+  <p class="tiny" style="text-align:center;margin-top:14px"><button class="link" id="b-have-account2" data-i18n="have_account"></button></p>
 </section>
 
 <!-- ===== HOME / SETTINGS ===== -->
@@ -165,6 +172,9 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
 
   <button class="btn" id="b-start" data-i18n="start"></button>
   <button class="btn ghost" id="b-testsound" data-i18n="test_sound"></button>
+  <div class="grp grp-static" style="margin-top:26px"><h2 data-i18n="st_title"></h2>
+    <p data-i18n="st_home_sub"></p>
+    <button class="btn" id="b-static" style="margin-top:0;background:var(--ph-static);color:#04131D" data-i18n="st_open"></button></div>
   <div style="display:flex;justify-content:space-between;margin-top:18px">
     <button class="link" id="b-history" data-i18n="history"></button>
     <button class="link" id="b-diag" data-i18n="diag"></button>
@@ -223,6 +233,55 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <button class="btn ghost" id="b-nx-skip" data-i18n="nx_skip"></button>
 </section>
 
+<!-- ===== APNEA STATICA: intro / storico ===== -->
+<section class="screen" id="s-static">
+  <div class="top"><h1 data-i18n="st_title"></h1><button class="pill" id="b-st-back" data-i18n="back"></button></div>
+  <p data-i18n="st_sub"></p>
+  <div class="stats"><div><b id="st-pb">–</b><span data-i18n="st_pb"></span></div><div><b id="st-last">–</b><span data-i18n="st_last"></span></div><div><b id="st-count">0</b><span data-i18n="st_tests"></span></div></div>
+  <div class="grp grp-static"><h2 data-i18n="st_settings"></h2>
+    <div class="row"><div class="lbl" data-i18n="st_warm"><small></small></div><div class="stepper" id="st-warm"></div></div>
+    <div class="row"><div class="lbl" data-i18n="st_voice"></div><button class="pill" id="b-st-voice">—</button></div></div>
+  <div class="note" style="margin-top:12px" data-i18n="st_hint_long"></div>
+  <button class="btn" id="b-st-start" data-i18n="st_start"></button>
+  <h2 data-i18n="st_trend"></h2>
+  <div id="st-trend"></div>
+  <div id="st-list"></div>
+</section>
+
+<!-- ===== APNEA STATICA: prova ===== -->
+<section class="screen" id="s-static-run" style="position:relative;user-select:none;-webkit-user-select:none">
+  <div class="sess" id="st-tap">
+    <div>
+      <div class="phase" id="st-ph"></div>
+      <div class="lungs" id="st-sub"></div>
+    </div>
+    <div class="num" id="st-num">–</div>
+    <div style="width:100%;max-width:360px">
+      <div class="meta" style="justify-content:center">
+        <div><b id="st-m-contr">0</b><span data-i18n="st_contr"></span></div>
+        <div><b id="st-m-first">–</b><span data-i18n="st_first"></span></div>
+      </div>
+      <div class="bar"><i id="st-bar"></i></div>
+      <div class="tiny" id="st-hint" style="margin-top:18px;opacity:.9"></div>
+      <button class="btn danger" id="b-st-stop" style="margin-top:14px" data-i18n="stop"></button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== APNEA STATICA: risultato ===== -->
+<section class="screen" id="s-static-result">
+  <h1 id="str-title"></h1>
+  <p id="str-sub"></p>
+  <div class="stats"><div><b id="str-total">–</b><span data-i18n="st_total"></span></div><div><b id="str-first">–</b><span data-i18n="st_first"></span></div><div><b id="str-contr">0</b><span data-i18n="st_contr"></span></div></div>
+  <div class="note ok" id="str-pb" style="display:none;margin-top:8px"></div>
+  <h2 data-i18n="st_chart_title"></h2>
+  <div id="str-chart"></div>
+  <p class="tiny" data-i18n="st_legend"></p>
+  <textarea id="str-notes"></textarea>
+  <div style="flex:1"></div>
+  <button class="btn" id="b-str-save" data-i18n="save"></button>
+</section>
+
 <!-- ===== ACCOUNT / LOGIN ===== -->
 <section class="screen" id="s-account">
   <div class="top"><h1 id="acc-title"></h1><button class="pill" id="b-acc-back" data-i18n="back"></button></div>
@@ -276,8 +335,10 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    Motore: la sessione è resa come UNA traccia audio; il player è l'orologio.
    v0.2: account (Google / codice email), ospite anonimo tracciato, sync, eventi,
          onboarding, proposta sessione successiva.
+   v0.3: accesso diretto 'ho già un account', modulo Apnea statica (riscaldamento
+         vocalizzato, tap contrazioni, doppio tap stop, grafici).
    ============================================================ */
-const VERSION='0.2.1';
+const VERSION='0.3.0';
 const SCHEMA=1;
 const PRIVACY_VERSION='2026-10-v1';
 const SUPA_URL='https://kiqumfsqcaukxazobszm.supabase.co';
@@ -325,6 +386,19 @@ const T={
   nudge_title:'Salva i tuoi progressi',
   err_email:'Inserisci un’email valida.', err_code:'Codice non valido o scaduto.', err_generic:'Qualcosa non ha funzionato. Riprova.', err_offline:'Sei offline: riprova con la connessione.',
   welcome:(n)=>n?`Ciao ${n}`:'Account attivo',
+  have_account:'Ho già un account · Accedi',
+  st_title:'Apnea statica', st_open:'Apri apnea statica', st_home_sub:'Prova massimale a secco con personal best, contrazioni e andamento.',
+  st_sub:'Solo a secco, seduto o sdraiato, mai in acqua e mai da soli se non ti senti sicuro. Interrompi subito in caso di malessere.',
+  st_pb:'personal best', st_last:'ultima', st_tests:'prove', st_settings:'Impostazioni', st_warm:'Riscaldamento (s)', st_voice:'Voce conto alla rovescia',
+  st_hint_long:'Riscaldamento con conto alla rovescia a voce ogni 30 s e negli ultimi 10 s. Allo zero inizia l’apnea: 1 tap = contrazione, 2 tap ravvicinati = stop.',
+  st_start:'Inizia la prova', st_trend:'Andamento nel tempo', st_empty:'Nessuna prova ancora. La prima la fai oggi.',
+  st_contr:'contrazioni', st_first:'1ª contrazione', st_total:'durata',
+  st_warm_ph:'Riscaldamento', st_warm_sub:'Respira con calma, ultimo respiro profondo allo zero', st_hold_ph:'Apnea', st_hold_sub:'Rilassati',
+  st_hint:'1 tap = contrazione · 2 tap = stop', st_done:'Apnea completata', st_aborted:'Prova interrotta',
+  st_chart_title:'Andamento della prova', st_legend:'Ogni tacca è una contrazione; le barre mostrano quante contrazioni ogni 10 secondi.',
+  st_newpb:'Nuovo personal best!', st_vs:(pb,last)=>`PB ${pb}${last?' · ultima '+last:''}`,
+  st_hist:(f,c)=>`${f?'1ª contr. '+f+' · ':''}${c} contrazioni`,
+  v_min:(m)=>m===1?'un minuto':`${m} minuti`, v_min30:(m)=>m===1?'un minuto e trenta':`${m} minuti e trenta`, v_30:'trenta secondi', v_go:'apnea', v_stop:'fine',
  },
  en:{
   dis_title:'Before you start',
@@ -365,6 +439,19 @@ const T={
   nudge_title:'Save your progress',
   err_email:'Enter a valid email.', err_code:'Invalid or expired code.', err_generic:'Something went wrong. Try again.', err_offline:'You are offline: retry when connected.',
   welcome:(n)=>n?`Hi ${n}`:'Account active',
+  have_account:'I already have an account · Sign in',
+  st_title:'Static apnea', st_open:'Open static apnea', st_home_sub:'Dry max attempt with personal best, contractions and trend.',
+  st_sub:'Dry only, seated or lying down, never in water and never alone if you don’t feel safe. Stop immediately if you feel unwell.',
+  st_pb:'personal best', st_last:'last', st_tests:'attempts', st_settings:'Settings', st_warm:'Warm-up (s)', st_voice:'Countdown voice',
+  st_hint_long:'Warm-up with a spoken countdown every 30 s and during the last 10 s. At zero the hold starts: 1 tap = contraction, 2 quick taps = stop.',
+  st_start:'Start attempt', st_trend:'Trend over time', st_empty:'No attempts yet. The first one is today.',
+  st_contr:'contractions', st_first:'1st contraction', st_total:'duration',
+  st_warm_ph:'Warm-up', st_warm_sub:'Breathe calmly, last deep breath at zero', st_hold_ph:'Hold', st_hold_sub:'Relax',
+  st_hint:'1 tap = contraction · 2 taps = stop', st_done:'Hold complete', st_aborted:'Attempt stopped',
+  st_chart_title:'Attempt timeline', st_legend:'Each tick is a contraction; bars show contractions per 10 seconds.',
+  st_newpb:'New personal best!', st_vs:(pb,last)=>`PB ${pb}${last?' · last '+last:''}`,
+  st_hist:(f,c)=>`${f?'1st contr. '+f+' · ':''}${c} contractions`,
+  v_min:(m)=>m===1?'one minute':`${m} minutes`, v_min30:(m)=>m===1?'one minute thirty':`${m} minutes thirty`, v_30:'thirty seconds', v_go:'hold', v_stop:'stop',
  }
 };
 let lang=ls(KEY.lang)||'it';
@@ -507,6 +594,18 @@ async function saveProfile(p){
     if(error)throw error;log('profile:saved');
   }catch(e){log('profile:error',e.message)}
 }
+async function pullProfile(){
+  if(!sb||!user||user.is_anonymous)return;
+  try{
+    const {data,error}=await sb.from('profiles').select('*').eq('user_id',user.id).maybeSingle();
+    if(error)throw error;if(!data)return;
+    profile=Object.assign({},profile||{},{
+      display_name:data.display_name||profile?.display_name||'',level:data.level||profile?.level||null,goal:data.goal||profile?.goal||null,
+      weekly_target:data.weekly_target||profile?.weekly_target||3,onboarding_done:!!(data.onboarding_done||profile?.onboarding_done),
+      consent_version:data.consent_privacy_version||profile?.consent_version,consent_at:data.consent_at||profile?.consent_at});
+    lsSet(KEY.onb,JSON.stringify(profile));log('profile:pulled',{onb:profile.onboarding_done});
+  }catch(e){log('profile:pull-error',e.message)}
+}
 async function registerDevice(){
   if(!sb||!user)return;
   try{const e=env();await sb.from('devices').upsert({id:deviceId,user_id:user.id,ua:e.ua.slice(0,200),platform:isIOS?'ios':/Android/.test(e.ua)?'android':'other',standalone:e.standalone,last_seen:new Date().toISOString()},{onConflict:'id'})}catch(e){log('device:error',e.message)}
@@ -613,11 +712,18 @@ async function afterLogin(method){
   const key=user.id+':'+(user.is_anonymous?'a':'u');if(loginKey===key)return;loginKey=key;
   log('auth:login',{method,id:user.id.slice(0,8)});
   track('login_success',{method});
+  await pullProfile();
   if(profile&&!profile.display_name&&(user.user_metadata?.full_name||user.user_metadata?.name))profile.display_name=user.user_metadata.full_name||user.user_metadata.name;
   await saveProfile(profile||{});
   await registerDevice();
   await pullSessions();await pushSessions();await flushEvents();
-  renderAccountPill();renderAccount();show('s-home');
+  renderAccountPill();renderAccount();
+  if(!profile||!profile.onboarding_done){renderOnb();show('s-onb')}else show('s-home');
+}
+// "Ho già un account": consenso accettato, nessun utente anonimo, vai subito al login
+function haveAccount(){
+  if(!ls(KEY.acc)){lsSet(KEY.acc,new Date().toISOString());profile=Object.assign({},profile||{},{consent_version:PRIVACY_VERSION,consent_at:new Date().toISOString()});lsSet(KEY.onb,JSON.stringify(profile));track('consent_accepted',{version:PRIVACY_VERSION,via:'have_account'})}
+  openAccount(false);accMode='existing';renderAccMode();
 }
 async function logout(){
   track('logout');await flushEvents();
@@ -637,6 +743,7 @@ async function startSession(){
   run={tl,plannedParams:{...params},id:uuid(),startedAt:new Date().toISOString(),lastSeg:-1,url:null,phaseMarks:[]};
   log('session:start',{id:run.id,total:tl.total,params});
   track('session_start',{total:tl.total,params});
+  audio.loop=false;audio.onended=null;
   try{audio.src=SILENCE;await withTimeout(audio.play(),1500,'unlock');log('audio:unlocked')}catch(e){log('audio:unlock-failed',e.message)}
   show('s-session');setPhaseUI(null);$('ph').textContent=t('preparing');
   const t0=performance.now();
@@ -754,6 +861,181 @@ $('b-nx-use').onclick=()=>finalizeSession({...nx.p},true);
 $('b-nx-skip').onclick=()=>finalizeSession({...run.plannedParams},false);
 function shouldNudge(completed){const n=lsJ(KEY.nudge,{count:0});if(completed>=1&&(n.count===0||completed%3===0)){n.count++;lsSet(KEY.nudge,JSON.stringify(n));return true}return false}
 
+/* ============================================================
+   APNEA STATICA (a secco): riscaldamento vocalizzato → apnea con tap
+   ============================================================ */
+const STATIC={id:'static-dry-v1',exerciseId:'static'};
+let stCfg=Object.assign({warmSec:120,voice:true},lsJ('bc.static.v1',{}));
+function stSave(){lsSet('bc.static.v1',JSON.stringify(stCfg));renderStatic()}
+const fmt=s=>{s=Math.max(0,Math.round(s));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
+const fmt1=s=>{const m=Math.floor(s/60),r=s-m*60;return `${m}:${r<10?'0':''}${r.toFixed(1)}`};
+function staticRecords(){return lsJ(KEY.sess,[]).filter(r=>r.exerciseId==='static'&&r.status==='completed'&&r.actualParams&&r.actualParams.holdSec>0)}
+function staticPB(){return staticRecords().reduce((m,r)=>Math.max(m,r.actualParams.holdSec),0)}
+
+/* --- voce --- */
+const synth=window.speechSynthesis;
+function speak(text){
+  if(!stCfg.voice||!synth)return;
+  try{synth.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='it'?'it-IT':'en-US';u.rate=1;u.pitch=1;synth.speak(u)}catch(e){log('voice-error',e.message)}
+}
+function sayRemaining(s){
+  if(s<=10)return speak(String(s));
+  const m=Math.floor(s/60),r=s%60;
+  if(r===0)return speak(T[lang].v_min(m));
+  if(r===30)return m?speak(T[lang].v_min30(m)):speak(t('v_30'));
+}
+if(synth){try{synth.getVoices()}catch(e){}}
+
+/* --- traccia audio riscaldamento (tono ogni 30 s, tick ultimi 10 s, "via" allo zero) --- */
+function renderWarmTrack(W){
+  return renderCues(W+2,tr=>{
+    for(let s=30;s<W;s+=30)tone(tr,W-s,659,659,.15,.35);
+    for(let s=10;s>=1;s--)tone(tr,W-s,880,880,.06,.3);
+    tone(tr,W,392,784,.7);
+  });
+}
+const tapAudio=new Audio();tapAudio.setAttribute('playsinline','');
+const TAP_WAV=(()=>{const tr=new Float32Array(Math.round(SR*.12));tone(tr,0,1200,1200,.05,.5);return URL.createObjectURL(wavBlob(tr))})();
+
+/* --- UI intro --- */
+function renderStatic(){
+  const el=$('st-warm');el.innerHTML=`<button>−</button><span class="v">${stCfg.warmSec}</span><button>+</button>`;
+  el.children[0].onclick=()=>{stCfg.warmSec=Math.max(0,stCfg.warmSec-30);stSave()};el.children[2].onclick=()=>{stCfg.warmSec=Math.min(300,stCfg.warmSec+30);stSave()};
+  $('b-st-voice').textContent=stCfg.voice?'ON':'OFF';$('b-st-voice').classList.toggle('acc',stCfg.voice);
+  const recs=staticRecords(),pb=staticPB(),last=recs[recs.length-1];
+  $('st-pb').textContent=pb?fmt(pb):'–';$('st-last').textContent=last?fmt(last.actualParams.holdSec):'–';$('st-count').textContent=recs.length;
+  $('st-trend').innerHTML=recs.length>=2?trendChart(recs.slice(-20)):'';
+  $('st-list').innerHTML=recs.length?recs.slice().reverse().slice(0,30).map(r=>{const d=new Date(r.startedAt),a=r.actualParams;
+    return `<div class="hist"><b>${d.toLocaleDateString(lang)}</b> · <b>${fmt(a.holdSec)}</b>${a.holdSec===pb?' 🏆':''} — ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',a.contractions.length)}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`}).join(''):`<p>${t('st_empty')}</p>`;
+}
+$('b-st-voice').onclick=()=>{stCfg.voice=!stCfg.voice;stSave();if(stCfg.voice)speak(t('st_title'))};
+$('b-static').onclick=()=>{renderStatic();track('static_open');show('s-static')};
+$('b-st-back').onclick=()=>show('s-home');
+
+/* --- motore prova --- */
+let srun=null;
+async function startStatic(){
+  $('b-st-start').disabled=true;
+  srun={id:uuid(),startedAt:new Date().toISOString(),phase:'warm',W:stCfg.warmSec,contr:[],lastTap:0,holdStart:null,spoken:new Set(),url:null};
+  log('static:start',{id:srun.id,warm:srun.W});track('static_start',{warm:srun.W});
+  try{audio.src=SILENCE;await withTimeout(audio.play(),1500,'unlock');tapAudio.src=TAP_WAV;tapAudio.volume=0;await withTimeout(tapAudio.play(),1500,'unlock2').catch(()=>{});tapAudio.volume=1}catch(e){log('audio:unlock-failed',e.message)}
+  if(stCfg.voice)speak(' ');
+  show('s-static-run');stUI();
+  $('st-hint').textContent='';$('b-st-stop').style.display='block';
+  if(srun.W>0){
+    srun.url=renderWarmTrack(srun.W);audio.src=srun.url;audio.loop=false;
+    try{await withTimeout(audio.play(),5000,'play');srun.wallStart=Date.now();log('audio:started')}catch(e){log('audio:play-failed',e.message);return stAbort('play-error')}
+    audio.onended=()=>{if(srun&&srun.phase==='warm')stHold()};
+    srun.lastS=srun.W;sayRemaining(srun.W);srun.spoken.add(srun.W);
+  }else{stHold()}
+  acquireWake();stTick();
+}
+function stHold(){
+  if(!srun||srun.phase!=='warm')return;
+  srun.phase='hold';srun.holdStart=Date.now();
+  // lascia finire il tono di "via", poi silenzio in loop per tenere viva la sessione audio
+  audio.onended=()=>{try{audio.src=SILENCE;audio.loop=true;audio.play().catch(()=>{})}catch(e){}};
+  if(srun.W===0||audio.ended)audio.onended();
+  speak(t('v_go'));log('static:hold-start');
+  $('st-hint').textContent=t('st_hint');$('b-st-stop').style.display='none';
+  stUI();
+}
+function stTick(){
+  if(!srun)return;
+  if(srun.phase==='warm'){
+    const el=srun.W>0?audio.currentTime:0;const left=Math.max(0,srun.W-el);const s=Math.ceil(left);
+    $('st-num').textContent=fmt(s);$('st-bar').style.width=(srun.W?el/srun.W*100:100).toFixed(1)+'%';
+    if(s!==srun.lastS){srun.lastS=s;if(s>0&&(s<=10||s%30===0)&&!srun.spoken.has(s)){srun.spoken.add(s);sayRemaining(s)}}
+    if(srun.W>0&&el>=srun.W)stHold();
+  }else{
+    const h=(Date.now()-srun.holdStart)/1000;
+    $('st-num').textContent=fmt(h);const pb=staticPB();$('st-bar').style.width=pb?Math.min(100,h/pb*100).toFixed(1)+'%':'0%';
+  }
+  srun.raf=requestAnimationFrame(stTick);
+}
+function stUI(){
+  const root=$('s-static-run');root.classList.add('dark');
+  if(srun.phase==='warm'){root.style.background='var(--ph-warm)';$('st-ph').textContent=t('st_warm_ph');$('st-sub').textContent=t('st_warm_sub')}
+  else{root.style.background='var(--ph-static)';$('st-ph').textContent=t('st_hold_ph');$('st-sub').textContent=t('st_hold_sub')}
+  $('st-m-contr').textContent=srun.contr.length;$('st-m-first').textContent=srun.contr.length?fmt(srun.contr[0]):'–';
+}
+function stTap(){
+  if(!srun||srun.phase!=='hold')return;
+  const now=Date.now();const h=(now-srun.holdStart)/1000;
+  if(now-srun.lastTap<400){srun.contr.pop();srun.lastTap=0;return stFinish(false)}
+  srun.lastTap=now;srun.contr.push(Math.round(h*10)/10);
+  try{tapAudio.currentTime=0;tapAudio.play().catch(()=>{})}catch(e){}
+  if('vibrate'in navigator)navigator.vibrate(30);
+  stUI();
+}
+$('st-tap').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;stTap()});
+$('b-st-stop').onclick=()=>stAbort('user');
+function stAbort(reason){log('static:abort',reason);stFinish(true,reason)}
+function stFinish(aborted,reason){
+  if(!srun)return;cancelAnimationFrame(srun.raf);
+  const holdSec=srun.phase==='hold'?Math.round((Date.now()-srun.holdStart)/10)/100:0;
+  try{audio.pause();audio.loop=false;audio.onended=null;if(synth)synth.cancel()}catch(e){}
+  if(srun.url)URL.revokeObjectURL(srun.url);releaseWake();
+  if(!aborted&&stCfg.voice)speak(t('v_stop'));
+  const pbBefore=staticPB();
+  srun.record={
+    id:srun.id,schemaVersion:SCHEMA,protocolId:STATIC.id,exerciseId:STATIC.exerciseId,
+    startedAt:srun.startedAt,endedAt:new Date().toISOString(),
+    plannedParams:{warmSec:srun.W},actualParams:{warmSec:srun.W,holdSec,firstContractionSec:srun.contr[0]??null,contractions:srun.contr},
+    status:aborted?'aborted':'completed',abortReason:aborted?(reason||'user'):null,
+    cyclesCompleted:srun.contr.length,elapsedSec:Math.round(holdSec),plannedSec:srun.W,
+    feedback:null,notes:'',nextParams:null,synced:false,owner:user?user.id:null,diag:{standalone:env().standalone,voice:stCfg.voice}
+  };
+  log('static:end',{status:srun.record.status,hold:holdSec,contr:srun.contr.length});
+  track(aborted?'static_abort':'static_complete',{hold:holdSec,contractions:srun.contr.length,first:srun.contr[0]??null});
+  $('s-static-run').style.background='var(--bg)';$('s-static-run').classList.remove('dark');
+  $('str-title').textContent=aborted?t('st_aborted'):t('st_done');
+  const recs=staticRecords(),last=recs[recs.length-1];
+  $('str-sub').textContent=pbBefore?T[lang].st_vs(fmt(pbBefore),last?fmt(last.actualParams.holdSec):''):'';
+  $('str-total').textContent=fmt1(holdSec);$('str-first').textContent=srun.contr.length?fmt1(srun.contr[0]):'–';$('str-contr').textContent=srun.contr.length;
+  const newPB=!aborted&&holdSec>pbBefore&&pbBefore>0;$('str-pb').style.display=newPB?'block':'none';$('str-pb').textContent=newPB?t('st_newpb')+' +'+fmt1(holdSec-pbBefore):'';
+  $('str-chart').innerHTML=holdSec>0?attemptChart(holdSec,srun.contr):'';
+  $('str-notes').value='';$('str-notes').placeholder=t('notes_ph');
+  show('s-static-result');$('b-st-start').disabled=false;
+}
+$('b-str-save').onclick=()=>{
+  if(!srun||!srun.record)return show('s-static');
+  srun.record.notes=$('str-notes').value.trim();
+  const all=lsJ(KEY.sess,[]);all.push(srun.record);lsSet(KEY.sess,JSON.stringify(all));
+  log('static:saved',srun.record.id);srun=null;pushSessions();renderStatic();show('s-static');
+};
+$('b-st-start').onclick=()=>startStatic().catch(e=>{log('static:crash',e.message);$('b-st-start').disabled=false;if(srun)stAbort('crash');else show('s-static')});
+
+/* --- grafici SVG --- */
+function attemptChart(total,contr){
+  const W=340,H=120,L=8,R=8,top=16,base=78;const x=s=>L+(s/total)*(W-L-R);
+  const nb=Math.max(1,Math.ceil(total/10));const buckets=new Array(nb).fill(0);contr.forEach(c=>{buckets[Math.min(nb-1,Math.floor(c/10))]++});const mx=Math.max(1,...buckets);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="aspect-ratio:${W}/${H}">`;
+  buckets.forEach((b,i)=>{if(!b)return;const x0=x(i*10),x1=x(Math.min(total,(i+1)*10));const h=(b/mx)*(base-top-4);s+=`<rect x="${x0+1}" y="${base-h}" width="${Math.max(1,x1-x0-2)}" height="${h}" rx="2" fill="rgba(121,201,242,.28)"/>`});
+  s+=`<line x1="${L}" y1="${base}" x2="${W-R}" y2="${base}" stroke="rgba(234,244,247,.5)" stroke-width="2"/>`;
+  if(contr.length){const f=x(contr[0]);s+=`<rect x="${f}" y="${base-2}" width="${W-R-f}" height="4" fill="var(--ph-hold_full)" opacity=".7"/>`}
+  contr.forEach((c,i)=>{s+=`<line x1="${x(c)}" y1="${base-14}" x2="${x(c)}" y2="${base+8}" stroke="${i===0?'var(--ph-hold_full)':'var(--ink)'}" stroke-width="${i===0?2.5:1.5}"/>`});
+  const step=total>240?60:30;for(let m=0;m<=total;m+=step)s+=`<text x="${x(m)}" y="${H-6}" text-anchor="${m===0?'start':m+step>total?'end':'middle'}">${fmt(m)}</text>`;
+  s+=`<text x="${W-R}" y="${H-6}" text-anchor="end">${fmt(total)}</text>`;
+  if(contr.length)s+=`<text x="${Math.min(W-40,x(contr[0]))}" y="${base-20}" fill="var(--ph-hold_full)">${t('st_first')} ${fmt(contr[0])}</text>`;
+  return s+'</svg>';
+}
+function trendChart(recs){
+  const W=340,H=140,L=34,R=10,top=14,bot=24;const n=recs.length;const mx=Math.max(...recs.map(r=>r.actualParams.holdSec))*1.08;
+  const x=i=>L+(n>1?i/(n-1):0.5)*(W-L-R),y=v=>top+(1-v/mx)*(H-top-bot);
+  const hold=recs.map((r,i)=>`${x(i)},${y(r.actualParams.holdSec)}`).join(' ');
+  const fc=recs.map((r,i)=>r.actualParams.firstContractionSec!=null?`${x(i)},${y(r.actualParams.firstContractionSec)}`:null).filter(Boolean).join(' ');
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" style="aspect-ratio:${W}/${H}">`;
+  for(const v of [mx/3,2*mx/3,mx/1.08]){s+=`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="rgba(234,244,247,.1)"/><text x="${L-4}" y="${y(v)+3}" text-anchor="end">${fmt(v)}</text>`}
+  if(fc)s+=`<polyline points="${fc}" fill="none" stroke="var(--ph-hold_full)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  s+=`<polyline points="${hold}" fill="none" stroke="var(--ph-static)" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const pb=Math.max(...recs.map(r=>r.actualParams.holdSec));
+  recs.forEach((r,i)=>{const v=r.actualParams.holdSec;s+=`<circle cx="${x(i)}" cy="${y(v)}" r="${v===pb?5:3}" fill="${v===pb?'var(--ph-hold_full)':'var(--ph-static)'}"/>`});
+  s+=`<text x="${L}" y="${H-6}">${new Date(recs[0].startedAt).toLocaleDateString(lang)}</text><text x="${W-R}" y="${H-6}" text-anchor="end">${new Date(recs[n-1].startedAt).toLocaleDateString(lang)}</text>`;
+  s+=`<text x="${W-R}" y="${top-2}" text-anchor="end" fill="var(--ph-static)">${t('st_total')} ─ <tspan fill="var(--ph-hold_full)">${t('st_first')} ┄</tspan></text>`;
+  return s+'</svg>';
+}
+
 /* ---------- mute ---------- */
 let muted=ls('bc.muted')==='1';
 function applyMute(){audio.muted=muted;document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊')}
@@ -797,6 +1079,7 @@ document.querySelectorAll('#onb-level button').forEach(b=>b.onclick=()=>{onb.lev
 document.querySelectorAll('#onb-goal button').forEach(b=>b.onclick=()=>{onb.goal=b.dataset.v;renderOnb()});
 $('b-onb-done').onclick=async()=>{
   onb.display_name=$('onb-name').value.trim();
+  if(!user)await ensureUser();
   await saveProfile({...onb,onboarding_done:true,consent_version:PRIVACY_VERSION,consent_at:profile?.consent_at||new Date().toISOString()});
   track('onboarding_done',{level:onb.level,goal:onb.goal,weekly:onb.weekly_target});
   renderAccountPill();show('s-home');
@@ -830,7 +1113,8 @@ function renderAccount(){
   $('acc-sync').textContent=T[lang].acc_synced(lsJ(KEY.sess,[]).filter(r=>!r.synced).length);
 }
 $('b-account').onclick=()=>openAccount(false);
-$('b-acc-back').onclick=()=>show('s-home');
+$('b-acc-back').onclick=()=>{if(!profile||!profile.onboarding_done){renderOnb();show('s-onb')}else show('s-home')};
+$('b-have-account').onclick=haveAccount;$('b-have-account2').onclick=haveAccount;
 $('b-send-code').onclick=sendCode;
 $('b-verify').onclick=verifyCode;
 $('acc-code').addEventListener('input',e=>{if(e.target.value.replace(/\D/g,'').length===6)verifyCode()});
@@ -849,7 +1133,8 @@ $('b-export').onclick=()=>{
 $('b-history').onclick=()=>{
   const all=lsJ(KEY.sess,[]).slice().reverse();
   $('hist-list').innerHTML=all.length?all.map(r=>{
-    const d=new Date(r.startedAt),p=r.plannedParams,fb={easy:'😄',right:'😐',hard:'😣'}[r.feedback]||'·';
+    const d=new Date(r.startedAt),p=r.plannedParams||{},fb={easy:'😄',right:'😐',hard:'😣'}[r.feedback]||'·';
+    if(r.exerciseId==='static'){const a=r.actualParams||{};return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> 🫁 ${t('st_title')} — <b>${fmt(a.holdSec||0)}</b> · ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',(a.contractions||[]).length)}${r.status==='aborted'?' · '+t('st_aborted').toLowerCase():''}${r.synced?'':' · ⟳'}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`}
     return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> ${fb} — ${p.inhale}/${p.holdFull}/${p.exhale}/${p.holdEmpty} × ${r.cyclesCompleted}/${p.cycles} · ${t2(r.elapsedSec)}${r.status==='aborted'?' · '+t('abort_title').toLowerCase():''}${r.synced?'':' · ⟳'}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`
   }).join(''):`<p>${t('hist_empty')}</p>`;
   track('history_view',{count:all.length});
@@ -869,7 +1154,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
   $('fb-notes').placeholder=t('notes_ph');$('b-lang').textContent=lang==='it'?'EN':'IT';
   $('ver').textContent=`Breathing Coach v${VERSION} · Orbita by Quota Zero`;
-  renderSettings();renderAccountPill();renderAccMode();
+  renderSettings();renderAccountPill();renderAccMode();renderStatic();
 }
 $('b-lang').onclick=()=>{lang=lang==='it'?'en':'it';lsSet(KEY.lang,lang);applyLang();if(profile)saveProfile({})};
 
