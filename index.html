@@ -52,8 +52,25 @@ p.lead{color:var(--ink);font-size:16px}
 .grp h2{color:var(--c);margin-top:6px}
 .grp-warm{--c:var(--ph-warm)}.grp-main{--c:var(--ph-hold_full)}.grp-static{--c:var(--ph-static)}
 #s-static-run{padding:0;transition:background .9s ease}
-#s-static-run .sess{min-height:100vh;min-height:100dvh;cursor:pointer}
-#s-static-run .num{font-size:min(30vw,150px)}
+#s-static-run{height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:hidden;padding:0}
+#s-static-run .sess{height:100%;min-height:0;padding:10px 20px 10px;cursor:pointer;justify-content:space-between}
+#s-static-run .phase{font-size:22px;min-height:0}
+#s-static-run .num{font-size:min(28vw,130px);margin:0}
+#s-static-run .btn{padding:12px;font-size:16px}
+.card{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--bg2);border-radius:16px;padding:16px 14px;margin-top:10px;border-left:4px solid var(--c)}
+.card .ic{width:40px;height:40px;flex-shrink:0;color:var(--c)}
+.card .ic svg{width:40px;height:40px}
+.card b{display:block;font-size:17px;font-weight:600}
+.card small{display:block;color:var(--ink2);font-size:13px;margin-top:3px}
+.card .chev{margin-left:auto;font-size:26px;color:var(--ink2)}
+.card:active{transform:scale(.985)}
+.mute svg{width:22px;height:22px}
+.tab svg{width:22px;height:22px;stroke:currentColor}
+#s-welcome,#s-home,#s-static{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(6,26,43,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 10px calc(8px + env(safe-area-inset-bottom,0px));z-index:5}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border-radius:12px;font-size:12px;color:var(--ink2)}
+.tab .ic{height:22px;display:flex}
+.tab.sel{color:var(--accent);background:rgba(143,224,210,.1)}
 .chart{width:100%;height:auto;display:block;background:var(--bg2);border-radius:12px;padding:8px}
 .chart text{font-family:var(--font);font-size:10px;fill:var(--ink2)}
 .mute{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);font-size:20px;display:flex;align-items:center;justify-content:center}
@@ -144,6 +161,26 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <p class="tiny" style="text-align:center;margin-top:14px"><button class="link" id="b-have-account2" data-i18n="have_account"></button></p>
 </section>
 
+<!-- ===== WELCOME ===== -->
+<section class="screen" id="s-welcome">
+  <div class="top">
+    <div><h1 id="wl-hi"></h1><div class="sum" id="wl-streak"></div></div>
+    <div style="display:flex;gap:8px;align-items:center"><button class="pill" id="b-lang2">EN</button></div>
+  </div>
+  <div style="margin:10px 0 4px"><button class="pill" id="b-account3" style="width:100%;text-align:left"></button></div>
+  <h2 data-i18n="wl_q"></h2>
+  <button class="card" id="wl-breath" style="--c:var(--ph-hold_full)"><span class="ic" data-ic="lungs"></span><span><b data-i18n="wl_breath"></b><small id="wl-breath-sub"></small></span><span class="chev">›</span></button>
+  <button class="card" id="wl-static" style="--c:var(--ph-static)"><span class="ic" data-ic="timer"></span><span><b data-i18n="wl_static"></b><small id="wl-static-sub"></small></span><span class="chev">›</span></button>
+  <div class="note" style="margin-top:18px" id="wl-tip"></div>
+  <div style="flex:1"></div>
+  <div style="display:flex;justify-content:space-between;margin-top:18px">
+    <button class="link" id="b-history2" data-i18n="history"></button>
+    <button class="link" id="b-diag2" data-i18n="diag"></button>
+  </div>
+  <p class="tiny" style="margin-top:12px" id="ver2"></p>
+  <nav class="tabs" data-tabs></nav>
+</section>
+
 <!-- ===== HOME / SETTINGS ===== -->
 <section class="screen" id="s-home">
   <div class="top">
@@ -151,7 +188,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
       <h1>Breathing Coach</h1>
       <div class="sum" id="proto-name"></div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center"><button class="mute" id="b-mute-home">🔊</button><button class="pill" id="b-lang">EN</button></div>
+    <div style="display:flex;gap:8px;align-items:center"><button class="mute" id="b-mute-home"></button><button class="pill" id="b-lang">EN</button></div>
   </div>
   <div style="margin:10px 0 4px"><button class="pill" id="b-account" style="width:100%;text-align:left"></button></div>
 
@@ -172,19 +209,18 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
 
   <button class="btn" id="b-start" data-i18n="start"></button>
   <button class="btn ghost" id="b-testsound" data-i18n="test_sound"></button>
-  <div class="grp grp-static" style="margin-top:26px"><h2 data-i18n="st_title"></h2>
-    <p data-i18n="st_home_sub"></p>
-    <button class="btn" id="b-static" style="margin-top:0;background:var(--ph-static);color:#04131D" data-i18n="st_open"></button></div>
+
   <div style="display:flex;justify-content:space-between;margin-top:18px">
     <button class="link" id="b-history" data-i18n="history"></button>
     <button class="link" id="b-diag" data-i18n="diag"></button>
   </div>
   <p class="tiny" style="margin-top:22px" id="ver"></p>
+  <nav class="tabs" data-tabs></nav>
 </section>
 
 <!-- ===== SESSION ===== -->
 <section class="screen" id="s-session" style="position:relative">
-  <button class="mute" id="b-mute-sess">🔊</button>
+  <button class="mute" id="b-mute-sess"></button>
   <div class="sess">
     <div>
       <div class="phase" id="ph"></div>
@@ -235,17 +271,19 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
 
 <!-- ===== APNEA STATICA: intro / storico ===== -->
 <section class="screen" id="s-static">
-  <div class="top"><h1 data-i18n="st_title"></h1><button class="pill" id="b-st-back" data-i18n="back"></button></div>
+  <div class="top"><div><h1 data-i18n="st_title"></h1><div class="sum" data-i18n="st_home_sub"></div></div><button class="pill" id="b-account2" style="flex-shrink:0;max-width:42%;overflow:hidden;text-overflow:ellipsis"></button></div>
   <p data-i18n="st_sub"></p>
   <div class="stats"><div><b id="st-pb">–</b><span data-i18n="st_pb"></span></div><div><b id="st-last">–</b><span data-i18n="st_last"></span></div><div><b id="st-count">0</b><span data-i18n="st_tests"></span></div></div>
   <div class="grp grp-static"><h2 data-i18n="st_settings"></h2>
     <div class="row"><div class="lbl" data-i18n="st_warm"><small></small></div><div class="stepper" id="st-warm"></div></div>
-    <div class="row"><div class="lbl" data-i18n="st_voice"></div><button class="pill" id="b-st-voice">—</button></div></div>
+    <div class="row"><div class="lbl" data-i18n="st_voice"></div><div style="display:flex;gap:8px"><button class="pill" id="b-st-voice-test" data-i18n="st_voice_test"></button><button class="pill" id="b-st-voice">—</button></div></div>
+    <p class="tiny" style="margin:4px 0 8px" data-i18n="st_voice_hint"></p></div>
   <div class="note" style="margin-top:12px" data-i18n="st_hint_long"></div>
   <button class="btn" id="b-st-start" data-i18n="st_start"></button>
   <h2 data-i18n="st_trend"></h2>
   <div id="st-trend"></div>
   <div id="st-list"></div>
+  <nav class="tabs" data-tabs></nav>
 </section>
 
 <!-- ===== APNEA STATICA: prova ===== -->
@@ -338,7 +376,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    v0.3: accesso diretto 'ho già un account', modulo Apnea statica (riscaldamento
          vocalizzato, tap contrazioni, doppio tap stop, grafici).
    ============================================================ */
-const VERSION='0.3.0';
+const VERSION='0.3.2';
 const SCHEMA=1;
 const PRIVACY_VERSION='2026-10-v1';
 const SUPA_URL='https://kiqumfsqcaukxazobszm.supabase.co';
@@ -386,7 +424,8 @@ const T={
   nudge_title:'Salva i tuoi progressi',
   err_email:'Inserisci un’email valida.', err_code:'Codice non valido o scaduto.', err_generic:'Qualcosa non ha funzionato. Riprova.', err_offline:'Sei offline: riprova con la connessione.',
   welcome:(n)=>n?`Ciao ${n}`:'Account attivo',
-  have_account:'Ho già un account · Accedi',
+  have_account:'Ho già un account · Accedi', tab_home:'Home', tab_breath:'Respirazione', tab_static:'Apnea statica',
+  wl_q:'Cosa vuoi fare oggi?', wl_breath:'Allenamento di respirazione', wl_static:'Prova di personal best', wl_hi:(n)=>n?`Ciao ${n}`:'Ciao', wl_streak:(d)=>d>1?`${d} giorni di fila`:d===1?'Allenato oggi · continua domani':'Nessun allenamento recente', wl_breath_sub:(r)=>r?`Ultima: ${r}`:'Nessuna sessione ancora', wl_static_sub:(pb)=>pb?`PB attuale ${pb}`:'Nessuna prova ancora', wl_tip:'Riscaldati sempre con la respirazione prima di una prova massimale.', st_voice_test:'Prova', st_voice_hint:'Se non senti la voce, controlla l’interruttore silenzioso dell’iPhone.',
   st_title:'Apnea statica', st_open:'Apri apnea statica', st_home_sub:'Prova massimale a secco con personal best, contrazioni e andamento.',
   st_sub:'Solo a secco, seduto o sdraiato, mai in acqua e mai da soli se non ti senti sicuro. Interrompi subito in caso di malessere.',
   st_pb:'personal best', st_last:'ultima', st_tests:'prove', st_settings:'Impostazioni', st_warm:'Riscaldamento (s)', st_voice:'Voce conto alla rovescia',
@@ -439,7 +478,8 @@ const T={
   nudge_title:'Save your progress',
   err_email:'Enter a valid email.', err_code:'Invalid or expired code.', err_generic:'Something went wrong. Try again.', err_offline:'You are offline: retry when connected.',
   welcome:(n)=>n?`Hi ${n}`:'Account active',
-  have_account:'I already have an account · Sign in',
+  have_account:'I already have an account · Sign in', tab_home:'Home', tab_breath:'Breathing', tab_static:'Static apnea',
+  wl_q:'What do you want to do today?', wl_breath:'Breathing training', wl_static:'Personal best attempt', wl_hi:(n)=>n?`Hi ${n}`:'Hi', wl_streak:(d)=>d>1?`${d} days in a row`:d===1?'Trained today · keep it up tomorrow':'No recent training', wl_breath_sub:(r)=>r?`Last: ${r}`:'No sessions yet', wl_static_sub:(pb)=>pb?`Current PB ${pb}`:'No attempts yet', wl_tip:'Always warm up with breathing before a max attempt.', st_voice_test:'Test', st_voice_hint:'If you can’t hear the voice, check the iPhone silent switch.',
   st_title:'Static apnea', st_open:'Open static apnea', st_home_sub:'Dry max attempt with personal best, contractions and trend.',
   st_sub:'Dry only, seated or lying down, never in water and never alone if you don’t feel safe. Stop immediately if you feel unwell.',
   st_pb:'personal best', st_last:'last', st_tests:'attempts', st_settings:'Settings', st_warm:'Warm-up (s)', st_voice:'Countdown voice',
@@ -718,7 +758,7 @@ async function afterLogin(method){
   await registerDevice();
   await pullSessions();await pushSessions();await flushEvents();
   renderAccountPill();renderAccount();
-  if(!profile||!profile.onboarding_done){renderOnb();show('s-onb')}else show('s-home');
+  if(!profile||!profile.onboarding_done){renderOnb();show('s-onb')}else goTab('s-welcome');
 }
 // "Ho già un account": consenso accettato, nessun utente anonimo, vai subito al login
 function haveAccount(){
@@ -729,7 +769,7 @@ async function logout(){
   track('logout');await flushEvents();
   try{await sb.auth.signOut()}catch(e){}
   user=null;lsSet(KEY.sess,JSON.stringify(lsJ(KEY.sess,[]).filter(r=>!r.synced)));
-  await ensureUser();renderAccountPill();show('s-home');
+  await ensureUser();renderAccountPill();goTab('s-welcome');
 }
 
 /* ---------- session engine ---------- */
@@ -855,7 +895,7 @@ function finalizeSession(nextParams,accepted){
   const completed=all.filter(r=>r.status==='completed').length;
   run=null;pushSessions();
   if(isGuest()&&shouldNudge(completed))return openAccount(true);
-  show('s-home');
+  goTab('s-home');
 }
 $('b-nx-use').onclick=()=>finalizeSession({...nx.p},true);
 $('b-nx-skip').onclick=()=>finalizeSession({...run.plannedParams},false);
@@ -876,7 +916,9 @@ function staticPB(){return staticRecords().reduce((m,r)=>Math.max(m,r.actualPara
 const synth=window.speechSynthesis;
 function speak(text){
   if(!stCfg.voice||!synth)return;
-  try{synth.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='it'?'it-IT':'en-US';u.rate=1;u.pitch=1;synth.speak(u)}catch(e){log('voice-error',e.message)}
+  try{synth.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='it'?'it-IT':'en-US';u.rate=1;u.pitch=1;u.volume=1;
+    const v=synth.getVoices().find(v=>v.lang.replace('_','-').toLowerCase().startsWith(lang==='it'?'it':'en'));if(v)u.voice=v;
+    u.onstart=()=>log('voice:start',text);u.onerror=e=>log('voice:error',e.error||'?');synth.speak(u);if(synth.paused)synth.resume()}catch(e){log('voice-error',e.message)}
 }
 function sayRemaining(s){
   if(s<=10)return speak(String(s));
@@ -890,7 +932,8 @@ if(synth){try{synth.getVoices()}catch(e){}}
 function renderWarmTrack(W){
   return renderCues(W+2,tr=>{
     for(let s=30;s<W;s+=30)tone(tr,W-s,659,659,.15,.35);
-    for(let s=10;s>=1;s--)tone(tr,W-s,880,880,.06,.3);
+    for(let s=10;s>=4;s--)tone(tr,W-s,880,880,.06,.3);
+    for(let s=3;s>=1;s--){tone(tr,W-s,1175,1175,.07,.4);tone(tr,W-s+.14,1175,1175,.07,.4)}
     tone(tr,W,392,784,.7);
   });
 }
@@ -906,11 +949,11 @@ function renderStatic(){
   $('st-pb').textContent=pb?fmt(pb):'–';$('st-last').textContent=last?fmt(last.actualParams.holdSec):'–';$('st-count').textContent=recs.length;
   $('st-trend').innerHTML=recs.length>=2?trendChart(recs.slice(-20)):'';
   $('st-list').innerHTML=recs.length?recs.slice().reverse().slice(0,30).map(r=>{const d=new Date(r.startedAt),a=r.actualParams;
-    return `<div class="hist"><b>${d.toLocaleDateString(lang)}</b> · <b>${fmt(a.holdSec)}</b>${a.holdSec===pb?' 🏆':''} — ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',a.contractions.length)}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`}).join(''):`<p>${t('st_empty')}</p>`;
+    return `<div class="hist"><b>${d.toLocaleDateString(lang)}</b> · <b>${fmt(a.holdSec)}</b>${a.holdSec===pb?' · PB':''} — ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',a.contractions.length)}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`}).join(''):`<p>${t('st_empty')}</p>`;
 }
 $('b-st-voice').onclick=()=>{stCfg.voice=!stCfg.voice;stSave();if(stCfg.voice)speak(t('st_title'))};
-$('b-static').onclick=()=>{renderStatic();track('static_open');show('s-static')};
-$('b-st-back').onclick=()=>show('s-home');
+$('b-account2').onclick=()=>openAccount(false);
+$('b-st-voice-test').onclick=()=>{speak(T[lang].v_min30(1));setTimeout(()=>speak('3'),2200)};
 
 /* --- motore prova --- */
 let srun=null;
@@ -919,14 +962,13 @@ async function startStatic(){
   srun={id:uuid(),startedAt:new Date().toISOString(),phase:'warm',W:stCfg.warmSec,contr:[],lastTap:0,holdStart:null,spoken:new Set(),url:null};
   log('static:start',{id:srun.id,warm:srun.W});track('static_start',{warm:srun.W});
   try{audio.src=SILENCE;await withTimeout(audio.play(),1500,'unlock');tapAudio.src=TAP_WAV;tapAudio.volume=0;await withTimeout(tapAudio.play(),1500,'unlock2').catch(()=>{});tapAudio.volume=1}catch(e){log('audio:unlock-failed',e.message)}
-  if(stCfg.voice)speak(' ');
   show('s-static-run');stUI();
   $('st-hint').textContent='';$('b-st-stop').style.display='block';
   if(srun.W>0){
     srun.url=renderWarmTrack(srun.W);audio.src=srun.url;audio.loop=false;
     try{await withTimeout(audio.play(),5000,'play');srun.wallStart=Date.now();log('audio:started')}catch(e){log('audio:play-failed',e.message);return stAbort('play-error')}
     audio.onended=()=>{if(srun&&srun.phase==='warm')stHold()};
-    srun.lastS=srun.W;sayRemaining(srun.W);srun.spoken.add(srun.W);
+    srun.lastS=srun.W;srun.spoken.add(srun.W);
   }else{stHold()}
   acquireWake();stTick();
 }
@@ -1004,7 +1046,11 @@ $('b-str-save').onclick=()=>{
   const all=lsJ(KEY.sess,[]);all.push(srun.record);lsSet(KEY.sess,JSON.stringify(all));
   log('static:saved',srun.record.id);srun=null;pushSessions();renderStatic();show('s-static');
 };
-$('b-st-start').onclick=()=>startStatic().catch(e=>{log('static:crash',e.message);$('b-st-start').disabled=false;if(srun)stAbort('crash');else show('s-static')});
+$('b-st-start').onclick=()=>{
+  // iOS: la sintesi vocale deve partire dentro il gesto dell'utente
+  if(synth)log('voice:voices',synth.getVoices().length);
+  if(stCfg.warmSec>0)sayRemaining(stCfg.warmSec);
+  return startStatic().catch(e=>{log('static:crash',e.message);$('b-st-start').disabled=false;if(srun)stAbort('crash');else show('s-static')})};
 
 /* --- grafici SVG --- */
 function attemptChart(total,contr){
@@ -1036,9 +1082,46 @@ function trendChart(recs){
   return s+'</svg>';
 }
 
+/* ---------- icone SVG (stile linea) ---------- */
+const ICON={
+  sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18.3 6.5a8 8 0 0 1 0 11"/></svg>',
+  mute:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
+  lungs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v8"/><path d="M12 9.5c-.6 1.2-1.6 1.8-3 2.2"/><path d="M12 9.5c.6 1.2 1.6 1.8 3 2.2"/><path d="M10.2 11.2c-1.2-.4-2.6 0-3.6 1.2C5.2 14 4.6 16.4 5 18.6c.2 1.2 1.3 1.7 2.6 1.3 1.8-.6 2.6-2.2 2.6-4.2v-4.5z"/><path d="M13.8 11.2c1.2-.4 2.6 0 3.6 1.2 1.4 1.6 2 4 1.6 6.2-.2 1.2-1.3 1.7-2.6 1.3-1.8-.6-2.6-2.2-2.6-4.2v-4.5z"/></svg>',
+  timer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5"/><path d="M10 2.5h4"/><path d="M12 2.5V6"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5 12 4l8.5 7.5"/><path d="M6 10.5V20h12v-9.5"/></svg>'
+};
+document.querySelectorAll('[data-ic]').forEach(el=>el.innerHTML=ICON[el.dataset.ic]);
+const TAB_DEFS=[['s-welcome','home','tab_home'],['s-home','lungs','tab_breath'],['s-static','timer','tab_static']];
+function renderTabs(active){
+  document.querySelectorAll('[data-tabs]').forEach(nav=>{nav.innerHTML=TAB_DEFS.map(([id,ic,k])=>`<button class="tab${id===active?' sel':''}" data-tab="${id}"><span class="ic">${ICON[ic]}</span><span>${t(k)}</span></button>`).join('');
+    nav.querySelectorAll('.tab').forEach(b=>b.onclick=()=>goTab(b.dataset.tab))});
+}
+function goTab(id){if(id==='s-static'){renderStatic();track('static_open')}if(id==='s-welcome')renderWelcome();renderTabs(id);show(id)}
+
+/* ---------- welcome ---------- */
+function dayKey(d){const x=new Date(d);return `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`}
+function streakDays(){
+  const days=new Set(lsJ(KEY.sess,[]).filter(r=>r.status==='completed').map(r=>dayKey(r.startedAt)));
+  let n=0;const d=new Date();if(!days.has(dayKey(d))){d.setDate(d.getDate()-1);if(!days.has(dayKey(d)))return 0}
+  while(days.has(dayKey(d))){n++;d.setDate(d.getDate()-1)}return n;
+}
+function renderWelcome(){
+  $('wl-hi').textContent=T[lang].wl_hi(userLabel()||(profile&&profile.display_name)||'');
+  $('wl-streak').textContent=T[lang].wl_streak(streakDays());
+  const br=lsJ(KEY.sess,[]).filter(r=>r.exerciseId!=='static'&&r.status==='completed').pop();
+  $('wl-breath-sub').textContent=T[lang].wl_breath_sub(br?`${new Date(br.startedAt).toLocaleDateString(lang)} · ${t2(br.elapsedSec)}`:'');
+  const pb=staticPB();$('wl-static-sub').textContent=T[lang].wl_static_sub(pb?fmt(pb):'');
+  $('wl-tip').textContent=t('wl_tip');$('ver2').textContent=`Breathing Coach v${VERSION} · Orbita by Quota Zero`;
+  const b3=$('b-account3');b3.textContent=$('b-account').textContent;b3.classList.toggle('acc',!isGuest());
+}
+$('wl-breath').onclick=()=>goTab('s-home');$('wl-static').onclick=()=>goTab('s-static');
+$('b-account3').onclick=()=>openAccount(false);
+$('b-lang2').onclick=()=>$('b-lang').click();
+$('b-history2').onclick=()=>$('b-history').click();$('b-diag2').onclick=()=>$('b-diag').click();
+
 /* ---------- mute ---------- */
 let muted=ls('bc.muted')==='1';
-function applyMute(){audio.muted=muted;document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊')}
+function applyMute(){audio.muted=muted;document.querySelectorAll('.mute').forEach(b=>b.innerHTML=muted?ICON.mute:ICON.sound)}
 document.querySelectorAll('.mute').forEach(b=>b.onclick=()=>{muted=!muted;lsSet('bc.muted',muted?'1':'0');applyMute();log('mute',muted)});
 applyMute();
 
@@ -1082,7 +1165,7 @@ $('b-onb-done').onclick=async()=>{
   if(!user)await ensureUser();
   await saveProfile({...onb,onboarding_done:true,consent_version:PRIVACY_VERSION,consent_at:profile?.consent_at||new Date().toISOString()});
   track('onboarding_done',{level:onb.level,goal:onb.goal,weekly:onb.weekly_target});
-  renderAccountPill();show('s-home');
+  renderAccountPill();goTab('s-welcome');
 };
 
 /* ---------- account UI ---------- */
@@ -1090,6 +1173,7 @@ function renderAccountPill(){
   const b=$('b-account');if(!b)return;
   if(isGuest()){b.textContent=t('acc_guest');b.classList.remove('acc')}
   else{const pend=lsJ(KEY.sess,[]).filter(r=>!r.synced).length;b.textContent=(userLabel()||'')+(pend?' · ⟳':' · ✓');b.classList.add('acc')}
+  const b2=$('b-account2');if(b2){b2.textContent=isGuest()?t('acc_guest').split(' · ')[0]:(userLabel()||'');b2.classList.toggle('acc',!isGuest())}
 }
 function renderAccMode(){$('b-acc-mode').textContent=accMode==='new'?t('acc_mode_new'):t('acc_mode_existing')}
 function openAccount(nudge){
@@ -1113,7 +1197,7 @@ function renderAccount(){
   $('acc-sync').textContent=T[lang].acc_synced(lsJ(KEY.sess,[]).filter(r=>!r.synced).length);
 }
 $('b-account').onclick=()=>openAccount(false);
-$('b-acc-back').onclick=()=>{if(!profile||!profile.onboarding_done){renderOnb();show('s-onb')}else show('s-home')};
+$('b-acc-back').onclick=()=>{if(!profile||!profile.onboarding_done){renderOnb();show('s-onb')}else goTab('s-welcome')};
 $('b-have-account').onclick=haveAccount;$('b-have-account2').onclick=haveAccount;
 $('b-send-code').onclick=sendCode;
 $('b-verify').onclick=verifyCode;
@@ -1134,17 +1218,17 @@ $('b-history').onclick=()=>{
   const all=lsJ(KEY.sess,[]).slice().reverse();
   $('hist-list').innerHTML=all.length?all.map(r=>{
     const d=new Date(r.startedAt),p=r.plannedParams||{},fb={easy:'😄',right:'😐',hard:'😣'}[r.feedback]||'·';
-    if(r.exerciseId==='static'){const a=r.actualParams||{};return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> 🫁 ${t('st_title')} — <b>${fmt(a.holdSec||0)}</b> · ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',(a.contractions||[]).length)}${r.status==='aborted'?' · '+t('st_aborted').toLowerCase():''}${r.synced?'':' · ⟳'}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`}
+    if(r.exerciseId==='static'){const a=r.actualParams||{};return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> ${t('st_title')} — <b>${fmt(a.holdSec||0)}</b> · ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',(a.contractions||[]).length)}${r.status==='aborted'?' · '+t('st_aborted').toLowerCase():''}${r.synced?'':' · ⟳'}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`}
     return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> ${fb} — ${p.inhale}/${p.holdFull}/${p.exhale}/${p.holdEmpty} × ${r.cyclesCompleted}/${p.cycles} · ${t2(r.elapsedSec)}${r.status==='aborted'?' · '+t('abort_title').toLowerCase():''}${r.synced?'':' · ⟳'}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`
   }).join(''):`<p>${t('hist_empty')}</p>`;
   track('history_view',{count:all.length});
   show('s-history');
 };
-$('b-hist-back').onclick=()=>show('s-home');
+$('b-hist-back').onclick=()=>goTab('s-welcome');
 
 /* ---------- diag UI ---------- */
 $('b-diag').onclick=()=>{$('diag-out').textContent=LOG.join('\n');show('s-diag')};
-$('b-diag-back').onclick=()=>show('s-home');
+$('b-diag-back').onclick=()=>goTab('s-welcome');
 $('b-copy').onclick=async()=>{const txt=LOG.join('\n');try{await navigator.clipboard.writeText(txt);alert('OK')}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();alert('OK')}};
 $('b-clear').onclick=()=>{LOG.length=0;log('env',env());$('diag-out').textContent=LOG.join('\n')};
 
@@ -1154,7 +1238,8 @@ function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
   $('fb-notes').placeholder=t('notes_ph');$('b-lang').textContent=lang==='it'?'EN':'IT';
   $('ver').textContent=`Breathing Coach v${VERSION} · Orbita by Quota Zero`;
-  renderSettings();renderAccountPill();renderAccMode();renderStatic();
+  $('b-lang2').textContent=$('b-lang').textContent;
+  renderSettings();renderAccountPill();renderAccMode();renderStatic();renderTabs(document.querySelector('.screen.on')?.id||'s-welcome');if($('s-welcome').classList.contains('on'))renderWelcome();
 }
 $('b-lang').onclick=()=>{lang=lang==='it'?'en':'it';lsSet(KEY.lang,lang);applyLang();if(profile)saveProfile({})};
 
@@ -1172,7 +1257,7 @@ applyLang();
   const all=lsJ(KEY.sess,[]);let mig=false;all.forEach(r=>{if(r.synced===undefined){r.synced=false;mig=true}});if(mig)lsSet(KEY.sess,JSON.stringify(all));
   if(!ls(KEY.acc)){show('s-disclaimer')}
   else if(!profile||!profile.onboarding_done){renderOnb();show('s-onb')}
-  else show('s-home');
+  else goTab('s-welcome');
   if(ls(KEY.acc))await ensureUser(); else {const {data:{session}}=sb?await sb.auth.getSession():{data:{}};if(session)user=session.user}
   if(sb)sb.auth.onAuthStateChange(async(ev,session)=>{log('auth:event',ev);if(session){user=session.user;if((ev==='SIGNED_IN'||ev==='USER_UPDATED')&&!user.is_anonymous){await afterLogin(user.app_metadata?.provider||'oauth')}}});
   track('app_open',{standalone:env().standalone,lang});
