@@ -110,7 +110,10 @@ input.code{letter-spacing:8px;text-align:center;font-size:28px;font-weight:600}
 textarea{width:100%;min-height:84px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);padding:12px;resize:vertical}
 /* diag */
 pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:12px;border-radius:12px;max-height:50vh;overflow:auto;white-space:pre-wrap;word-break:break-word}
-.hist{font-size:14px;padding:12px 0;border-bottom:1px solid var(--line);color:var(--ink2)}
+.hist{font-size:14px;padding:12px 0;border-bottom:1px solid var(--line);color:var(--ink2);display:flex;gap:10px;align-items:flex-start}
+.hist .ht{flex:1}
+.hist .del{flex-shrink:0;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);color:var(--ink2);font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}
+.hist .del:active{color:var(--danger);border-color:var(--danger)}
 .hist b{color:var(--ink);font-weight:600}
 .link{color:var(--accent);text-decoration:underline;background:none;padding:0;font-size:14px}
 .tiny{font-size:12.5px;color:var(--ink2)}
@@ -376,7 +379,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    v0.3: accesso diretto 'ho già un account', modulo Apnea statica (riscaldamento
          vocalizzato, tap contrazioni, doppio tap stop, grafici).
    ============================================================ */
-const VERSION='0.3.2';
+const VERSION='0.3.3';
 const SCHEMA=1;
 const PRIVACY_VERSION='2026-10-v1';
 const SUPA_URL='https://kiqumfsqcaukxazobszm.supabase.co';
@@ -424,6 +427,7 @@ const T={
   nudge_title:'Salva i tuoi progressi',
   err_email:'Inserisci un’email valida.', err_code:'Codice non valido o scaduto.', err_generic:'Qualcosa non ha funzionato. Riprova.', err_offline:'Sei offline: riprova con la connessione.',
   welcome:(n)=>n?`Ciao ${n}`:'Account attivo',
+  del_confirm:'Eliminare questa prova? L’operazione non si può annullare.', del_err:'Non sono riuscito a eliminarla dal cloud: riproverò alla prossima connessione.',
   have_account:'Ho già un account · Accedi', tab_home:'Home', tab_breath:'Respirazione', tab_static:'Apnea statica',
   wl_q:'Cosa vuoi fare oggi?', wl_breath:'Allenamento di respirazione', wl_static:'Prova di personal best', wl_hi:(n)=>n?`Ciao ${n}`:'Ciao', wl_streak:(d)=>d>1?`${d} giorni di fila`:d===1?'Allenato oggi · continua domani':'Nessun allenamento recente', wl_breath_sub:(r)=>r?`Ultima: ${r}`:'Nessuna sessione ancora', wl_static_sub:(pb)=>pb?`PB attuale ${pb}`:'Nessuna prova ancora', wl_tip:'Riscaldati sempre con la respirazione prima di una prova massimale.', st_voice_test:'Prova', st_voice_hint:'Se non senti la voce, controlla l’interruttore silenzioso dell’iPhone.',
   st_title:'Apnea statica', st_open:'Apri apnea statica', st_home_sub:'Prova massimale a secco con personal best, contrazioni e andamento.',
@@ -478,6 +482,7 @@ const T={
   nudge_title:'Save your progress',
   err_email:'Enter a valid email.', err_code:'Invalid or expired code.', err_generic:'Something went wrong. Try again.', err_offline:'You are offline: retry when connected.',
   welcome:(n)=>n?`Hi ${n}`:'Account active',
+  del_confirm:'Delete this attempt? This cannot be undone.', del_err:'Could not delete it from the cloud: will retry on next connection.',
   have_account:'I already have an account · Sign in', tab_home:'Home', tab_breath:'Breathing', tab_static:'Static apnea',
   wl_q:'What do you want to do today?', wl_breath:'Breathing training', wl_static:'Personal best attempt', wl_hi:(n)=>n?`Hi ${n}`:'Hi', wl_streak:(d)=>d>1?`${d} days in a row`:d===1?'Trained today · keep it up tomorrow':'No recent training', wl_breath_sub:(r)=>r?`Last: ${r}`:'No sessions yet', wl_static_sub:(pb)=>pb?`Current PB ${pb}`:'No attempts yet', wl_tip:'Always warm up with breathing before a max attempt.', st_voice_test:'Test', st_voice_hint:'If you can’t hear the voice, check the iPhone silent switch.',
   st_title:'Static apnea', st_open:'Open static apnea', st_home_sub:'Dry max attempt with personal best, contractions and trend.',
@@ -693,11 +698,31 @@ async function pullSessions(){
     const {data,error}=await sb.from('sessions').select('*').order('started_at',{ascending:true}).limit(1000);
     if(error)throw error;
     const all=lsJ(KEY.sess,[]);const byId=new Map(all.map(r=>[r.id,r]));
-    let added=0;for(const x of data){if(!byId.has(x.id)){all.push(fromRow(x));added++}else{byId.get(x.id).synced=true;byId.get(x.id).owner=x.user_id}}
+    const pendDel=new Set(lsJ(KEY_DEL,[]));
+    let added=0;for(const x of data){if(pendDel.has(x.id))continue;if(!byId.has(x.id)){all.push(fromRow(x));added++}else{byId.get(x.id).synced=true;byId.get(x.id).owner=x.user_id}}
     all.sort((a,b)=>a.startedAt<b.startedAt?-1:1);lsSet(KEY.sess,JSON.stringify(all));log('sessions:pulled',{total:data.length,added});
   }catch(e){log('sessions:pull-error',e.message)}
 }
-async function syncAll(){await flushEvents();await pushSessions()}
+/* --- eliminazione sessioni (locale + cloud, con coda se offline) --- */
+const KEY_DEL='bc.deleted.v1';
+async function deleteSession(id){
+  const all=lsJ(KEY.sess,[]);const rec=all.find(r=>r.id===id);
+  lsSet(KEY.sess,JSON.stringify(all.filter(r=>r.id!==id)));
+  const q=lsJ(KEY_DEL,[]);if(rec&&rec.synced&&!q.includes(id)){q.push(id);lsSet(KEY_DEL,JSON.stringify(q))}
+  track('session_delete',{exercise:rec?rec.exerciseId:null});log('session:deleted',id);
+  await flushDeletes();
+}
+let deleting=false;
+async function flushDeletes(){
+  if(deleting||!sb||!user||!navigator.onLine)return;
+  const q=lsJ(KEY_DEL,[]);if(!q.length)return;deleting=true;
+  try{const {error}=await sb.from('sessions').delete().in('id',q);if(error)throw error;lsSet(KEY_DEL,'[]');log('sessions:deleted-cloud',q.length)}
+  catch(e){log('sessions:delete-error',e.message)}finally{deleting=false}
+}
+async function syncAll(){await flushEvents();await flushDeletes();await pushSessions()}
+function bindDeletes(container,after){
+  container.querySelectorAll('.del').forEach(b=>b.onclick=async e=>{e.stopPropagation();if(!confirm(t('del_confirm')))return;await deleteSession(b.dataset.id);after()});
+}
 window.addEventListener('online',syncAll);
 
 /* --- login / account --- */
@@ -949,7 +974,8 @@ function renderStatic(){
   $('st-pb').textContent=pb?fmt(pb):'–';$('st-last').textContent=last?fmt(last.actualParams.holdSec):'–';$('st-count').textContent=recs.length;
   $('st-trend').innerHTML=recs.length>=2?trendChart(recs.slice(-20)):'';
   $('st-list').innerHTML=recs.length?recs.slice().reverse().slice(0,30).map(r=>{const d=new Date(r.startedAt),a=r.actualParams;
-    return `<div class="hist"><b>${d.toLocaleDateString(lang)}</b> · <b>${fmt(a.holdSec)}</b>${a.holdSec===pb?' · PB':''} — ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',a.contractions.length)}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`}).join(''):`<p>${t('st_empty')}</p>`;
+    return `<div class="hist"><div class="ht"><b>${d.toLocaleDateString(lang)}</b> · <b>${fmt(a.holdSec)}</b>${a.holdSec===pb?' · PB':''} — ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',a.contractions.length)}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div><button class="del" data-id="${r.id}" aria-label="delete">✕</button></div>`}).join(''):`<p>${t('st_empty')}</p>`;
+  bindDeletes($('st-list'),renderStatic);
 }
 $('b-st-voice').onclick=()=>{stCfg.voice=!stCfg.voice;stSave();if(stCfg.voice)speak(t('st_title'))};
 $('b-account2').onclick=()=>openAccount(false);
@@ -1214,16 +1240,19 @@ $('b-export').onclick=()=>{
 };
 
 /* ---------- history ---------- */
-$('b-history').onclick=()=>{
+function renderHistory(){
   const all=lsJ(KEY.sess,[]).slice().reverse();
+  const D=r=>`<button class="del" data-id="${r.id}" aria-label="delete">✕</button>`;
   $('hist-list').innerHTML=all.length?all.map(r=>{
     const d=new Date(r.startedAt),p=r.plannedParams||{},fb={easy:'😄',right:'😐',hard:'😣'}[r.feedback]||'·';
-    if(r.exerciseId==='static'){const a=r.actualParams||{};return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> ${t('st_title')} — <b>${fmt(a.holdSec||0)}</b> · ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',(a.contractions||[]).length)}${r.status==='aborted'?' · '+t('st_aborted').toLowerCase():''}${r.synced?'':' · ⟳'}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`}
-    return `<div class="hist"><b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b> ${fb} — ${p.inhale}/${p.holdFull}/${p.exhale}/${p.holdEmpty} × ${r.cyclesCompleted}/${p.cycles} · ${t2(r.elapsedSec)}${r.status==='aborted'?' · '+t('abort_title').toLowerCase():''}${r.synced?'':' · ⟳'}${r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):''}</div>`
+    const when=`<b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b>`;
+    const notes=r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):'';const sync=r.synced?'':' · ⟳';
+    if(r.exerciseId==='static'){const a=r.actualParams||{};return `<div class="hist"><div class="ht">${when} ${t('st_title')} — <b>${fmt(a.holdSec||0)}</b> · ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',(a.contractions||[]).length)}${r.status==='aborted'?' · '+t('st_aborted').toLowerCase():''}${sync}${notes}</div>${D(r)}</div>`}
+    return `<div class="hist"><div class="ht">${when} ${fb} — ${p.inhale}/${p.holdFull}/${p.exhale}/${p.holdEmpty} × ${r.cyclesCompleted}/${p.cycles} · ${t2(r.elapsedSec)}${r.status==='aborted'?' · '+t('abort_title').toLowerCase():''}${sync}${notes}</div>${D(r)}</div>`
   }).join(''):`<p>${t('hist_empty')}</p>`;
-  track('history_view',{count:all.length});
-  show('s-history');
-};
+  bindDeletes($('hist-list'),renderHistory);
+}
+$('b-history').onclick=()=>{renderHistory();track('history_view',{count:lsJ(KEY.sess,[]).length});show('s-history')};
 $('b-hist-back').onclick=()=>goTab('s-welcome');
 
 /* ---------- diag UI ---------- */
