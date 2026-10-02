@@ -391,7 +391,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    v0.3: accesso diretto 'ho già un account', modulo Apnea statica (riscaldamento
          vocalizzato, tap contrazioni, doppio tap stop, grafici).
    ============================================================ */
-const VERSION='0.3.4';
+const VERSION='0.3.5';
 const SCHEMA=1;
 const PRIVACY_VERSION='2026-10-v1';
 const SUPA_URL='https://kiqumfsqcaukxazobszm.supabase.co';
@@ -777,7 +777,7 @@ async function googleLogin(){
   const redirectTo=location.origin+location.pathname;
   try{
     track('login_google_start',{guest:isGuest()});
-    if(isGuest()&&user){
+    if(isGuest()&&user&&accMode==='new'){
       const {error}=await sb.auth.linkIdentity({provider:'google',options:{redirectTo}});
       if(error){log('auth:link-error',error.message);await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo}})}
     }else{
@@ -1303,6 +1303,11 @@ $('b-accept').onclick=async()=>{
 };
 applyLang();
 (async()=>{
+  // Google già collegato a un altro account (link ospite fallito): accedi direttamente a quell'account
+  try{const h=location.hash+location.search;if(/identity_already_exists|already.{0,20}linked/i.test(decodeURIComponent(h))&&!sessionStorage.getItem('bc.relogin')){
+    sessionStorage.setItem('bc.relogin','1');history.replaceState(null,'',location.pathname);log('auth:relogin-google');
+    await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});return}
+    sessionStorage.removeItem('bc.relogin')}catch(e){log('auth:relogin-error',e.message)}
   // migrazione record v0.1 (senza flag synced)
   const all=lsJ(KEY.sess,[]);let mig=false;all.forEach(r=>{if(r.synced===undefined){r.synced=false;mig=true}});if(mig)lsSet(KEY.sess,JSON.stringify(all));
   if(!ls(KEY.acc)){show('s-disclaimer')}
