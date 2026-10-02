@@ -211,7 +211,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <div class="note" style="margin-top:14px" data-i18n="reminder"></div>
 
   <button class="btn" id="b-start" data-i18n="start"></button>
-  <button class="btn ghost" id="b-testsound" data-i18n="test_sound"></button>
+  <p class="tiny" style="text-align:center;margin-top:8px" data-i18n="vol_hint"></p>
 
   <div style="display:flex;justify-content:space-between;margin-top:18px">
     <button class="link" id="b-history" data-i18n="history"></button>
@@ -228,6 +228,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
     <div>
       <div class="phase" id="ph"></div>
       <div class="lungs" id="lg"></div>
+      <div class="lungs" id="tipx" style="font-size:17px;font-weight:500;margin-top:14px;min-height:24px"></div>
     </div>
     <div class="num" id="num">–</div>
     <div style="width:100%;max-width:360px">
@@ -279,10 +280,11 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <div class="stats"><div><b id="st-pb">–</b><span data-i18n="st_pb"></span></div><div><b id="st-last">–</b><span data-i18n="st_last"></span></div><div><b id="st-count">0</b><span data-i18n="st_tests"></span></div></div>
   <div class="grp grp-static"><h2 data-i18n="st_settings"></h2>
     <div class="row"><div class="lbl" data-i18n="st_warm"><small></small></div><div class="stepper" id="st-warm"></div></div>
-    <div class="row"><div class="lbl" data-i18n="st_voice"></div><div style="display:flex;gap:8px"><button class="pill" id="b-st-voice-test" data-i18n="st_voice_test"></button><button class="pill" id="b-st-voice">—</button></div></div>
-    <p class="tiny" style="margin:4px 0 8px" data-i18n="st_voice_hint"></p></div>
+    <div class="row"><div class="lbl" data-i18n="st_voice"></div><div style="display:flex;gap:8px"><button class="pill" id="b-st-voice">—</button></div></div>
+</div>
   <div class="note" style="margin-top:12px" data-i18n="st_hint_long"></div>
   <button class="btn" id="b-st-start" data-i18n="st_start"></button>
+  <p class="tiny" style="text-align:center;margin-top:8px" data-i18n="vol_hint"></p>
   <h2 data-i18n="st_trend"></h2>
   <div id="st-trend"></div>
   <div id="st-list"></div>
@@ -306,6 +308,16 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
       <div class="tiny" id="st-hint" style="margin-top:18px;opacity:.9"></div>
       <button class="btn danger" id="b-st-stop" style="margin-top:14px" data-i18n="stop"></button>
     </div>
+  </div>
+</section>
+
+<!-- ===== APNEA STATICA: recupero ===== -->
+<section class="screen dark" id="s-static-rec" style="background:var(--ph-inhale)">
+  <div class="sess">
+    <div><div class="phase" id="rec-ph"></div><div class="lungs" id="rec-sub"></div></div>
+    <div class="num" id="rec-num">1:00</div>
+    <div style="width:100%;max-width:360px"><div class="bar"><i id="rec-bar"></i></div>
+      <button class="btn danger" id="b-rec-skip" style="margin-top:22px"></button></div>
   </div>
 </section>
 
@@ -379,7 +391,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    v0.3: accesso diretto 'ho già un account', modulo Apnea statica (riscaldamento
          vocalizzato, tap contrazioni, doppio tap stop, grafici).
    ============================================================ */
-const VERSION='0.3.3';
+const VERSION='0.3.4';
 const SCHEMA=1;
 const PRIVACY_VERSION='2026-10-v1';
 const SUPA_URL='https://kiqumfsqcaukxazobszm.supabase.co';
@@ -408,7 +420,7 @@ const T={
   nx_title:'Prossima sessione', nx_sub:'Proposta in base al tuo feedback. Ogni valore si regola da solo.', nx_easier:'Più facile', nx_same:'Uguale', nx_harder:'Più competitiva', nx_use:'Usa questa per la prossima', nx_skip:'Lascia come adesso',
   export:'Esporta dati (JSON)', copy:'Copia log', clear_log:'Svuota log', diag_help:'Fai una sessione, poi copia questo log e incollalo in chat.',
   preparing:'Preparazione…', warm:'Riscaldamento', inhale:'Inspira', exhale:'Espira', hold_full:'Trattieni', hold_empty:'Trattieni',
-  lungs_full:'Polmoni pieni', lungs_empty:'Polmoni vuoti', cycle:'ciclo', left:'rimanente', last:'ultimo ciclo',
+  vol_hint:'Alza il volume e disattiva il silenzioso del telefono.', rec_title:'Recupero', rec_sub:'Respira liberamente, con calma', rec_skip:'Salta', tips:['Rilassa la mandibola','Lingua morbida, staccata dal palato','Collo e spalle morbide','Fronte e viso distesi','Lascia andare le mani','Pancia morbida, niente tensione'], lungs_full:'Polmoni pieni', lungs_empty:'Polmoni vuoti', cycle:'ciclo', left:'rimanente', last:'ultimo ciclo',
   done_title:'Allenamento completato', abort_title:'Allenamento interrotto',
   sum_total:(m)=>`Durata totale ${m}`,
   hist_empty:'Nessuna sessione ancora. La prima la fai oggi.',
@@ -463,7 +475,7 @@ const T={
   nx_title:'Next session', nx_sub:'Suggested from your feedback. Adjust each value independently.', nx_easier:'Easier', nx_same:'Same', nx_harder:'Harder', nx_use:'Use this next time', nx_skip:'Keep current',
   export:'Export data (JSON)', copy:'Copy log', clear_log:'Clear log', diag_help:'Do a session, then copy this log and paste it in chat.',
   preparing:'Preparing…', warm:'Warm-up', inhale:'Inhale', exhale:'Exhale', hold_full:'Hold', hold_empty:'Hold',
-  lungs_full:'Full lungs', lungs_empty:'Empty lungs', cycle:'cycle', left:'left', last:'last cycle',
+  vol_hint:'Turn the volume up and switch off silent mode.', rec_title:'Recovery', rec_sub:'Breathe freely and calmly', rec_skip:'Skip', tips:['Relax your jaw','Soft tongue, away from the palate','Neck and shoulders loose','Forehead and face relaxed','Let your hands go','Soft belly, no tension'], lungs_full:'Full lungs', lungs_empty:'Empty lungs', cycle:'cycle', left:'left', last:'last cycle',
   done_title:'Training complete', abort_title:'Training stopped',
   sum_total:(m)=>`Total duration ${m}`,
   hist_empty:'No sessions yet. The first one is today.',
@@ -839,11 +851,12 @@ function tick(){
 }
 function setPhaseUI(s){
   const root=$('s-session');
-  if(!s){root.style.background='var(--bg)';root.classList.remove('dark');$('ph').textContent='';$('lg').textContent='';$('m-cycle').textContent='–';$('m-cycle-l').textContent=t('cycle');$('m-left-l').textContent=t('left');return}
+  if(!s){root.style.background='var(--bg)';root.classList.remove('dark');$('ph').textContent='';$('lg').textContent='';$('tipx').textContent='';$('m-cycle').textContent='–';$('m-cycle-l').textContent=t('cycle');$('m-left-l').textContent=t('left');return}
   const col=s.block==='warmup'?'var(--ph-warm)':`var(--ph-${s.type})`;
   root.style.background=col;root.classList.add('dark');
   $('ph').textContent=(s.block==='warmup'?t('warm')+' · ':'')+t(s.type);
   $('lg').textContent=s.type==='hold_full'?t('lungs_full'):s.type==='hold_empty'?t('lungs_empty'):'';
+  {const hl=s.type==='hold_full'||s.type==='hold_empty';const tp=T[lang].tips;$('tipx').textContent=hl&&s.block==='main'?tp[(s.rep*2+(s.type==='hold_empty'?1:0))%tp.length]:''}
   $('m-cycle').textContent=`${s.rep}/${s.reps}`;
   $('m-cycle-l').textContent=s.block==='warmup'?t('warm'):(s.rep===s.reps&&s.reps>1?t('last'):t('cycle'));
   $('m-left-l').textContent=t('left');
@@ -979,7 +992,6 @@ function renderStatic(){
 }
 $('b-st-voice').onclick=()=>{stCfg.voice=!stCfg.voice;stSave();if(stCfg.voice)speak(t('st_title'))};
 $('b-account2').onclick=()=>openAccount(false);
-$('b-st-voice-test').onclick=()=>{speak(T[lang].v_min30(1));setTimeout(()=>speak('3'),2200)};
 
 /* --- motore prova --- */
 let srun=null;
@@ -1064,8 +1076,25 @@ function stFinish(aborted,reason){
   const newPB=!aborted&&holdSec>pbBefore&&pbBefore>0;$('str-pb').style.display=newPB?'block':'none';$('str-pb').textContent=newPB?t('st_newpb')+' +'+fmt1(holdSec-pbBefore):'';
   $('str-chart').innerHTML=holdSec>0?attemptChart(holdSec,srun.contr):'';
   $('str-notes').value='';$('str-notes').placeholder=t('notes_ph');
-  show('s-static-result');$('b-st-start').disabled=false;
+  $('b-st-start').disabled=false;
+  if(holdSec>0)startRecovery();else show('s-static-result');
 }
+/* --- recupero 1 minuto, respirazione libera --- */
+const REC_SEC=60;let rec=null;
+function startRecovery(){
+  rec={t0:Date.now()};$('rec-ph').textContent=t('rec_title');$('rec-sub').textContent=t('rec_sub');$('b-rec-skip').textContent=t('rec_skip');
+  show('s-static-rec');acquireWake();log('static:recovery-start');
+  const tk=()=>{if(!rec)return;const el=(Date.now()-rec.t0)/1000;const left=Math.max(0,REC_SEC-el);
+    $('rec-num').textContent=fmt(Math.ceil(left));$('rec-bar').style.width=Math.min(100,el/REC_SEC*100).toFixed(1)+'%';
+    if(left<=0)return endRecovery(false);rec.raf=requestAnimationFrame(tk)};tk();
+}
+function endRecovery(skipped){
+  if(!rec)return;cancelAnimationFrame(rec.raf);const el=Math.min(REC_SEC,Math.round((Date.now()-rec.t0)/1000));rec=null;releaseWake();
+  if(srun&&srun.record)srun.record.actualParams.recoverySec=el;
+  if(!skipped){try{audio.src=renderCues(2,tr=>CUES.end(tr,0));audio.loop=false;audio.play().catch(()=>{})}catch(e){}if('vibrate'in navigator)navigator.vibrate(120)}
+  log('static:recovery-end',{el,skipped});show('s-static-result');
+}
+$('b-rec-skip').onclick=()=>endRecovery(true);
 $('b-str-save').onclick=()=>{
   if(!srun||!srun.record)return show('s-static');
   srun.record.notes=$('str-notes').value.trim();
@@ -1150,14 +1179,6 @@ let muted=ls('bc.muted')==='1';
 function applyMute(){audio.muted=muted;document.querySelectorAll('.mute').forEach(b=>b.innerHTML=muted?ICON.mute:ICON.sound)}
 document.querySelectorAll('.mute').forEach(b=>b.onclick=()=>{muted=!muted;lsSet('bc.muted',muted?'1':'0');applyMute();log('mute',muted)});
 applyMute();
-
-/* ---------- test suoni ---------- */
-$('b-testsound').onclick=async()=>{
-  try{audio.src=SILENCE;await withTimeout(audio.play(),1500,'unlock')}catch(e){log('audio:unlock-failed',e.message)}
-  audio.src=renderCues(13,tr=>{CUES.inhale(tr,.5);CUES.hold_full(tr,2.5);CUES.exhale(tr,4.5);CUES.hold_empty(tr,6.5);CUES.last(tr,8.8);CUES.end(tr,10.5)});
-  try{await withTimeout(audio.play(),5000,'play');log('test-sound:play')}catch(e){log('test-sound:failed',e.message)}
-  alert(t('sound_hint'));
-};
 
 /* ---------- settings UI ---------- */
 let paramsDirty=null;
