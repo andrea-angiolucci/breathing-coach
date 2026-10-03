@@ -50,7 +50,13 @@ p.lead{color:var(--ink);font-size:16px}
 .row .lbl small{display:block;color:var(--ink2);font-size:12.5px;margin-top:2px}
 .grp{border-left:3px solid var(--c);padding-left:14px;margin-top:6px}
 .grp h2{color:var(--c);margin-top:6px}
-.grp-warm{--c:var(--ph-warm)}.grp-main{--c:var(--ph-hold_full)}.grp-static{--c:var(--ph-static)}
+#s-pb,#s-pb-add{}.pbcard{background:var(--card);border-radius:16px;padding:14px 16px;margin-top:10px;width:100%;text-align:left;display:block}
+.pbcard .pbh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.pbcard .pbv{font-size:26px;font-weight:700;letter-spacing:-.01em}.pbcard .pbn{font-weight:600}.pbcard small{color:var(--ink2);font-size:12px;display:block}.pbcard .pbn small{display:inline}
+.pbgrp{display:flex;align-items:center;gap:8px;margin:22px 0 2px;color:var(--c);font-weight:600;font-size:15px}.pbgrp .ic svg{width:22px;height:22px}
+.pbempty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin:28px 0}.pbempty img{width:110px;height:auto;border-radius:20px}
+.chips2{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.chips2 button{border:1px solid var(--line);border-radius:20px;padding:8px 14px;color:var(--ink2);font-size:14px}.chips2 button.sel{background:var(--c,var(--acc));color:#062A2A;border-color:transparent;font-weight:600}
+.pbin{display:flex;gap:8px;align-items:center;margin:8px 0}.pbin input{background:var(--card);border:1px solid var(--line);border-radius:12px;color:var(--ink);padding:12px;font-size:20px;width:90px;text-align:center}.pbin input[type=date]{width:auto;font-size:16px}
+.warmcard{display:flex;flex-direction:column;gap:2px;padding:10px 0 6px;font-size:15px}.warmcard span{font-size:13px;color:var(--ink2)}.grp-warm{--c:var(--ph-warm)}.grp-main{--c:var(--ph-hold_full)}.grp-static{--c:var(--ph-static)}
 #s-static-run{padding:0;transition:background .9s ease}
 #s-static-run{height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:hidden;padding:0}
 #s-static-run .sess{height:100%;min-height:0;padding:10px 20px 10px;cursor:pointer;justify-content:space-between}
@@ -66,7 +72,7 @@ p.lead{color:var(--ink);font-size:16px}
 .card:active{transform:scale(.985)}
 .mute svg{width:22px;height:22px}
 .tab svg{width:22px;height:22px;stroke:currentColor}
-#s-welcome,#s-home,#s-static{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#s-welcome,#s-home,#s-static,#s-pb{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(6,26,43,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 10px calc(8px + env(safe-area-inset-bottom,0px));z-index:5}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border-radius:12px;font-size:12px;color:var(--ink2)}
 .tab .ic{height:22px;display:flex}
@@ -174,6 +180,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <h2 data-i18n="wl_q"></h2>
   <button class="card" id="wl-breath" style="--c:var(--ph-hold_full)"><span class="ic" data-ic="lungs"></span><span><b data-i18n="wl_breath"></b><small id="wl-breath-sub"></small></span><span class="chev">›</span></button>
   <button class="card" id="wl-static" style="--c:var(--ph-static)"><span class="ic" data-ic="timer"></span><span><b data-i18n="wl_static"></b><small id="wl-static-sub"></small></span><span class="chev">›</span></button>
+  <button class="card" id="wl-pb" style="--c:var(--ph-inhale)"><span class="ic" data-ic="diver"></span><span><b data-i18n="wl_pb"></b><small id="wl-pb-sub"></small></span><span class="chev">›</span></button>
   <div class="note" style="margin-top:18px" id="wl-tip"></div>
   <div style="flex:1"></div>
   <div style="display:flex;justify-content:space-between;margin-top:18px">
@@ -195,10 +202,18 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   </div>
   <div style="margin:10px 0 4px"><button class="pill" id="b-account" style="width:100%;text-align:left"></button></div>
 
-  <div class="grp grp-warm"><h2 data-i18n="set_warm"></h2>
-  <div class="row"><div class="lbl" data-i18n="set_warm_in"></div><div class="stepper" data-k="warmIn" data-step="1" data-min="2" data-max="20"></div></div>
-  <div class="row"><div class="lbl" data-i18n="set_warm_out"></div><div class="stepper" data-k="warmOut" data-step="1" data-min="2" data-max="20"></div></div>
-  <div class="row"><div class="lbl" data-i18n="set_warm_n"></div><div class="stepper" data-k="warmReps" data-step="1" data-min="0" data-max="10"></div></div></div>
+  <div class="grp grp-warm">
+    <div class="top" style="align-items:center"><h2 data-i18n="set_warm"></h2><button class="pill" id="b-warm-edit" style="display:inline-flex;gap:6px;align-items:center"></button></div>
+    <div id="warm-view" class="warmcard"><b id="warm-sum"></b><span id="warm-tag"></span></div>
+    <div id="warm-edit" style="display:none">
+      <div class="row"><div class="lbl" data-i18n="set_warm_in"></div><div class="stepper" data-k="warmIn" data-step="1" data-min="2" data-max="20"></div></div>
+      <div class="row"><div class="lbl" data-i18n="set_warm_out"></div><div class="stepper" data-k="warmOut" data-step="1" data-min="2" data-max="20"></div></div>
+      <div class="row"><div class="lbl" data-i18n="set_warm_n"></div><div class="stepper" data-k="warmReps" data-step="1" data-min="0" data-max="10"></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px">
+        <button class="pill" id="b-warm-save"></button><button class="pill" id="b-warm-reset"></button><button class="pill" id="b-warm-cancel"></button>
+      </div>
+    </div>
+  </div>
 
   <div class="grp grp-main"><h2 data-i18n="set_main"></h2>
   <div class="row"><div class="lbl" data-i18n="set_in"></div><div class="stepper" data-k="inhale" data-step="1" data-min="2" data-max="60"></div></div>
@@ -335,6 +350,26 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
   <button class="btn" id="b-str-save" data-i18n="save"></button>
 </section>
 
+<!-- ===== DATI APNEA ===== -->
+<section class="screen" id="s-pb">
+  <div class="top"><div><h1 data-i18n="pb_title"></h1><div class="sum" data-i18n="pb_sub"></div></div><button class="pill" id="b-pb-add" style="display:inline-flex;gap:6px;align-items:center;flex-shrink:0"></button></div>
+  <div id="pb-body"></div>
+  <nav class="tabs" data-tabs></nav>
+</section>
+<section class="screen" id="s-pb-add">
+  <div class="top"><h1 data-i18n="pb_add_title"></h1><button class="pill" id="b-pbadd-back" data-i18n="back"></button></div>
+  <h2 data-i18n="pb_disc"></h2>
+  <div id="pbadd-disc"></div>
+  <h2 id="pbadd-vlabel"></h2>
+  <div class="pbin" id="pbadd-vin"></div>
+  <h2 data-i18n="pb_date"></h2>
+  <div class="pbin"><input type="date" id="pbadd-date"></div>
+  <textarea id="pbadd-notes"></textarea>
+  <p class="tiny" id="pbadd-err" style="color:#F2A0A0;min-height:18px"></p>
+  <div style="flex:1"></div>
+  <button class="btn" id="b-pbadd-save" data-i18n="save"></button>
+</section>
+
 <!-- ===== ACCOUNT / LOGIN ===== -->
 <section class="screen" id="s-account">
   <div class="top"><h1 id="acc-title"></h1><button class="pill" id="b-acc-back" data-i18n="back"></button></div>
@@ -362,6 +397,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
     <div class="stats"><div><b id="st-sessions">0</b><span data-i18n="st_sessions"></span></div><div><b id="st-minutes">0</b><span data-i18n="st_minutes"></span></div><div><b id="st-week">0</b><span data-i18n="st_week"></span></div></div>
     <p class="tiny" id="acc-sync"></p>
     <button class="btn ghost" id="b-export" data-i18n="export"></button>
+    <a class="btn ghost" id="b-admin" href="admin.html" style="display:none;text-align:center;text-decoration:none">Pannello admin</a>
     <button class="btn ghost" id="b-logout" data-i18n="acc_logout"></button>
     <p class="tiny" style="margin-top:16px" data-i18n="acc_delete_info"></p>
   </div>
@@ -391,12 +427,12 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    v0.3: accesso diretto 'ho già un account', modulo Apnea statica (riscaldamento
          vocalizzato, tap contrazioni, doppio tap stop, grafici).
    ============================================================ */
-const VERSION='0.3.5';
+const VERSION='0.5.1';
 const SCHEMA=1;
 const PRIVACY_VERSION='2026-10-v1';
 const SUPA_URL='https://kiqumfsqcaukxazobszm.supabase.co';
 const SUPA_KEY='sb_publishable_9YiJUA45r62HfT5KTidEdw_N0QICtoC';
-const KEY={cfg:'bc.params.v1',sess:'bc.sessions.v1',acc:'bc.disclaimer.v1',lang:'bc.lang',athlete:'bc.athlete',onb:'bc.onboarding.v1',events:'bc.events.v1',nudge:'bc.nudge'};
+const KEY={cfg:'bc.params.v1',sess:'bc.sessions.v1',acc:'bc.disclaimer.v1',lang:'bc.lang',athlete:'bc.athlete',onb:'bc.onboarding.v1',events:'bc.events.v1',nudge:'bc.nudge',warm:'bc.warm.v1'};
 
 /* ---------- i18n ---------- */
 const T={
@@ -420,7 +456,7 @@ const T={
   nx_title:'Prossima sessione', nx_sub:'Proposta in base al tuo feedback. Ogni valore si regola da solo.', nx_easier:'Più facile', nx_same:'Uguale', nx_harder:'Più competitiva', nx_use:'Usa questa per la prossima', nx_skip:'Lascia come adesso',
   export:'Esporta dati (JSON)', copy:'Copia log', clear_log:'Svuota log', diag_help:'Fai una sessione, poi copia questo log e incollalo in chat.',
   preparing:'Preparazione…', warm:'Riscaldamento', inhale:'Inspira', exhale:'Espira', hold_full:'Trattieni', hold_empty:'Trattieni',
-  vol_hint:'Alza il volume e disattiva il silenzioso del telefono.', rec_title:'Recupero', rec_sub:'Respira liberamente, con calma', rec_skip:'Salta', tips:['Rilassa la mandibola','Lingua morbida, staccata dal palato','Collo e spalle morbide','Fronte e viso distesi','Lascia andare le mani','Pancia morbida, niente tensione'], lungs_full:'Polmoni pieni', lungs_empty:'Polmoni vuoti', cycle:'ciclo', left:'rimanente', last:'ultimo ciclo',
+  tab_pb:'Dati apnea', wl_pb:'I miei dati apnea', pb_title:'Dati apnea', pb_sub:'I tuoi personal best', pb_new:'Nuovo', pb_add_title:'Nuovo personal best', pb_disc:'Disciplina', pb_date:'Data', pb_empty_t:'Registra il tuo primo personal best', pb_empty_s:'Inserisci i tuoi record in piscina e in mare: li ritrovi qui, con lo storico.', pb_g_dry:'A secco', pb_g_pool:'Piscina', pb_g_sea:'Mare', pb_dry_note:'dalla prova nell’app', pb_min:'min', pb_sec:'sec', pb_m:'metri', pb_time:'Tempo', pb_dist:'Distanza', pb_depth:'Profondità', pb_att:(n)=>n===1?'1 risultato':`${n} risultati`, pb_err:'Inserisci un valore valido.', pb_err_disc:'Scegli una disciplina.', pb_sub_wl:(v)=>v?`${v} record registrati`:'Registra i tuoi personal best', D_STA:'Apnea statica', D_DYN:'Dinamica con pinne', D_DYNB:'Dinamica bipinne', D_DNF:'Dinamica senza pinne', D_CWT:'Assetto costante', D_CWTB:'Assetto costante bipinne', D_CNF:'Assetto costante senza pinne', D_FIM:'Immersione libera', warm_edit:'Modifica', warm_mine:'Il tuo riscaldamento', warm_def:'Predefinito', warm_save:'Salva come mio', warm_reset:'Ripristina predefinito', warm_cancel:'Annulla', warm_saved:'Salvato', warm_sumf:(n,i,o)=>n>0?`${n} respiri · ${i} s inspira / ${o} s espira`:'Nessun riscaldamento', vol_hint:'Alza il volume e disattiva il silenzioso del telefono.', rec_title:'Recupero', rec_sub:'Respira liberamente, con calma', rec_skip:'Salta', tips:['Rilassa la mandibola','Lingua morbida, staccata dal palato','Collo e spalle morbide','Fronte e viso distesi','Lascia andare le mani','Pancia morbida, niente tensione'], lungs_full:'Polmoni pieni', lungs_empty:'Polmoni vuoti', cycle:'ciclo', left:'rimanente', last:'ultimo ciclo',
   done_title:'Allenamento completato', abort_title:'Allenamento interrotto',
   sum_total:(m)=>`Durata totale ${m}`,
   hist_empty:'Nessuna sessione ancora. La prima la fai oggi.',
@@ -475,7 +511,7 @@ const T={
   nx_title:'Next session', nx_sub:'Suggested from your feedback. Adjust each value independently.', nx_easier:'Easier', nx_same:'Same', nx_harder:'Harder', nx_use:'Use this next time', nx_skip:'Keep current',
   export:'Export data (JSON)', copy:'Copy log', clear_log:'Clear log', diag_help:'Do a session, then copy this log and paste it in chat.',
   preparing:'Preparing…', warm:'Warm-up', inhale:'Inhale', exhale:'Exhale', hold_full:'Hold', hold_empty:'Hold',
-  vol_hint:'Turn the volume up and switch off silent mode.', rec_title:'Recovery', rec_sub:'Breathe freely and calmly', rec_skip:'Skip', tips:['Relax your jaw','Soft tongue, away from the palate','Neck and shoulders loose','Forehead and face relaxed','Let your hands go','Soft belly, no tension'], lungs_full:'Full lungs', lungs_empty:'Empty lungs', cycle:'cycle', left:'left', last:'last cycle',
+  tab_pb:'Apnea data', wl_pb:'My apnea data', pb_title:'Apnea data', pb_sub:'Your personal bests', pb_new:'New', pb_add_title:'New personal best', pb_disc:'Discipline', pb_date:'Date', pb_empty_t:'Log your first personal best', pb_empty_s:'Enter your pool and sea records: you will find them here with their history.', pb_g_dry:'Dry', pb_g_pool:'Pool', pb_g_sea:'Sea', pb_dry_note:'from the in-app test', pb_min:'min', pb_sec:'sec', pb_m:'metres', pb_time:'Time', pb_dist:'Distance', pb_depth:'Depth', pb_att:(n)=>n===1?'1 result':`${n} results`, pb_err:'Enter a valid value.', pb_err_disc:'Pick a discipline.', pb_sub_wl:(v)=>v?`${v} records logged`:'Log your personal bests', D_STA:'Static apnea', D_DYN:'Dynamic with fins', D_DYNB:'Dynamic bi-fins', D_DNF:'Dynamic no fins', D_CWT:'Constant weight', D_CWTB:'Constant weight bi-fins', D_CNF:'Constant no fins', D_FIM:'Free immersion', warm_edit:'Edit', warm_mine:'Your warm-up', warm_def:'Default', warm_save:'Save as mine', warm_reset:'Restore default', warm_cancel:'Cancel', warm_saved:'Saved', warm_sumf:(n,i,o)=>n>0?`${n} breaths · ${i} s in / ${o} s out`:'No warm-up', vol_hint:'Turn the volume up and switch off silent mode.', rec_title:'Recovery', rec_sub:'Breathe freely and calmly', rec_skip:'Skip', tips:['Relax your jaw','Soft tongue, away from the palate','Neck and shoulders loose','Forehead and face relaxed','Let your hands go','Soft belly, no tension'], lungs_full:'Full lungs', lungs_empty:'Empty lungs', cycle:'cycle', left:'left', last:'last cycle',
   done_title:'Training complete', abort_title:'Training stopped',
   sum_total:(m)=>`Total duration ${m}`,
   hist_empty:'No sessions yet. The first one is today.',
@@ -539,6 +575,11 @@ const PROTOCOL={
   ]
 };
 let params=Object.assign({},PROTOCOL.params,lsJ(KEY.cfg,{}));
+const WARM_KEYS=['warmIn','warmOut','warmReps'];
+function warmDefault(){const o={};WARM_KEYS.forEach(k=>o[k]=PROTOCOL.params[k]);return o}
+function warmMine(){const m=lsJ(KEY.warm,null);return m&&WARM_KEYS.every(k=>typeof m[k]==='number')?m:null}
+function warmBase(){return warmMine()||warmDefault()}
+Object.assign(params,warmBase());
 
 function buildTimeline(p){
   const segs=[];let tt=0;const LEAD=2;
@@ -1143,33 +1184,39 @@ const ICON={
   mute:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
   lungs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v8"/><path d="M12 9.5c-.6 1.2-1.6 1.8-3 2.2"/><path d="M12 9.5c.6 1.2 1.6 1.8 3 2.2"/><path d="M10.2 11.2c-1.2-.4-2.6 0-3.6 1.2C5.2 14 4.6 16.4 5 18.6c.2 1.2 1.3 1.7 2.6 1.3 1.8-.6 2.6-2.2 2.6-4.2v-4.5z"/><path d="M13.8 11.2c1.2-.4 2.6 0 3.6 1.2 1.4 1.6 2 4 1.6 6.2-.2 1.2-1.3 1.7-2.6 1.3-1.8-.6-2.6-2.2-2.6-4.2v-4.5z"/></svg>',
   timer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5"/><path d="M10 2.5h4"/><path d="M12 2.5V6"/></svg>',
+  pencil:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+  diver:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8c3.2 3.9 6.2 7.1 6.2 10.4a6.2 6.2 0 0 1-12.4 0C5.8 9.9 8.8 6.7 12 2.8z"/><path d="M12 8.2v7"/><path d="M10.6 7.2 12 8.8l1.4-1.6"/><circle cx="12" cy="16.6" r=".9"/></svg>',
+  pool:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9.5h18M3 14.5h18"/><path d="M7 5v14M12 5v14M17 5v14" stroke-dasharray="1 3"/></svg>',
+  sea:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9c1.8-1.6 3.4-1.6 5 0s3.2 1.6 5 0 3.4-1.6 5 0 2.2 1 2.5.8"/><path d="M2.5 14c1.8-1.6 3.4-1.6 5 0s3.2 1.6 5 0 3.4-1.6 5 0 2.2 1 2.5.8"/><path d="M2.5 19c1.8-1.6 3.4-1.6 5 0s3.2 1.6 5 0 3.4-1.6 5 0 2.2 1 2.5.8"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5 12 4l8.5 7.5"/><path d="M6 10.5V20h12v-9.5"/></svg>'
 };
 document.querySelectorAll('[data-ic]').forEach(el=>el.innerHTML=ICON[el.dataset.ic]);
-const TAB_DEFS=[['s-welcome','home','tab_home'],['s-home','lungs','tab_breath'],['s-static','timer','tab_static']];
+const TAB_DEFS=[['s-welcome','home','tab_home'],['s-home','lungs','tab_breath'],['s-static','timer','tab_static'],['s-pb','diver','tab_pb']];
 function renderTabs(active){
   document.querySelectorAll('[data-tabs]').forEach(nav=>{nav.innerHTML=TAB_DEFS.map(([id,ic,k])=>`<button class="tab${id===active?' sel':''}" data-tab="${id}"><span class="ic">${ICON[ic]}</span><span>${t(k)}</span></button>`).join('');
     nav.querySelectorAll('.tab').forEach(b=>b.onclick=()=>goTab(b.dataset.tab))});
 }
-function goTab(id){if(id==='s-static'){renderStatic();track('static_open')}if(id==='s-welcome')renderWelcome();renderTabs(id);show(id)}
+function goTab(id){if(id==='s-pb'){renderPB();track('pb_open')}if(id==='s-static'){renderStatic();track('static_open')}if(id==='s-welcome')renderWelcome();renderTabs(id);show(id)}
 
 /* ---------- welcome ---------- */
 function dayKey(d){const x=new Date(d);return `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`}
 function streakDays(){
-  const days=new Set(lsJ(KEY.sess,[]).filter(r=>r.status==='completed').map(r=>dayKey(r.startedAt)));
+  const days=new Set(lsJ(KEY.sess,[]).filter(r=>r.status==='completed'&&r.exerciseId!=='pb').map(r=>dayKey(r.startedAt)));
   let n=0;const d=new Date();if(!days.has(dayKey(d))){d.setDate(d.getDate()-1);if(!days.has(dayKey(d)))return 0}
   while(days.has(dayKey(d))){n++;d.setDate(d.getDate()-1)}return n;
 }
 function renderWelcome(){
   $('wl-hi').textContent=T[lang].wl_hi(userLabel()||(profile&&profile.display_name)||'');
   $('wl-streak').textContent=T[lang].wl_streak(streakDays());
-  const br=lsJ(KEY.sess,[]).filter(r=>r.exerciseId!=='static'&&r.status==='completed').pop();
+  const br=lsJ(KEY.sess,[]).filter(r=>r.exerciseId==='breathing'&&r.status==='completed').pop();
   $('wl-breath-sub').textContent=T[lang].wl_breath_sub(br?`${new Date(br.startedAt).toLocaleDateString(lang)} · ${t2(br.elapsedSec)}`:'');
   const pb=staticPB();$('wl-static-sub').textContent=T[lang].wl_static_sub(pb?fmt(pb):'');
+  $('wl-pb-sub').textContent=T[lang].pb_sub_wl(pbRecords().length);
   $('wl-tip').textContent=t('wl_tip');$('ver2').textContent=`Breathing Coach v${VERSION} · Orbita by Quota Zero`;
   const b3=$('b-account3');b3.textContent=$('b-account').textContent;b3.classList.toggle('acc',!isGuest());
 }
-$('wl-breath').onclick=()=>goTab('s-home');$('wl-static').onclick=()=>goTab('s-static');
+$('wl-pb').onclick=()=>goTab('s-pb');$('wl-breath').onclick=()=>goTab('s-home');$('wl-static').onclick=()=>goTab('s-static');
 $('b-account3').onclick=()=>openAccount(false);
 $('b-lang2').onclick=()=>$('b-lang').click();
 $('b-history2').onclick=()=>$('b-history').click();$('b-diag2').onclick=()=>$('b-diag').click();
@@ -1179,6 +1226,64 @@ let muted=ls('bc.muted')==='1';
 function applyMute(){audio.muted=muted;document.querySelectorAll('.mute').forEach(b=>b.innerHTML=muted?ICON.mute:ICON.sound)}
 document.querySelectorAll('.mute').forEach(b=>b.onclick=()=>{muted=!muted;lsSet('bc.muted',muted?'1':'0');applyMute();log('mute',muted)});
 applyMute();
+
+/* ---------- dati apnea: personal best per disciplina ---------- */
+const LOGO_B64='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';
+const DISC={pool:['STA','DYN','DYNB','DNF'],sea:['CWT','CWTB','CNF','FIM']};
+const DISC_KIND={STA:'time',DYN:'dist',DYNB:'dist',DNF:'dist',CWT:'depth',CWTB:'depth',CNF:'depth',FIM:'depth'};
+function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function pbRecords(){return lsJ(KEY.sess,[]).filter(r=>r.exerciseId==='pb'&&r.status==='completed'&&r.actualParams&&r.actualParams.value>0)}
+function pbFmt(d,v){return DISC_KIND[d]==='time'?fmt(v):`${Math.round(v*10)/10} m`}
+function pbSpark(vals){if(vals.length<2)return '';const W=120,H=28,mx=Math.max(...vals),mn=Math.min(...vals),rg=(mx-mn)||1;
+  const pts=vals.map((v,i)=>`${(i/(vals.length-1)*(W-6)+3).toFixed(1)},${(H-4-(v-mn)/rg*(H-8)).toFixed(1)}`).join(' ');
+  return `<div style="margin-top:6px;line-height:0"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><polyline points="${pts}" fill="none" stroke="var(--c)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`}
+let pbOpen=null;
+function renderPB(){
+  $('b-pb-add').innerHTML=ICON.pencil+' '+t('pb_new');
+  const recs=pbRecords().sort((a,b)=>new Date(a.startedAt)-new Date(b.startedAt));
+  const by={};recs.forEach(r=>{(by[r.actualParams.discipline]=by[r.actualParams.discipline]||[]).push(r)});
+  const spb=staticPB();
+  const card=(code,list,color,dry)=>{
+    const vals=list.map(r=>r.actualParams.value),best=Math.max(...vals),bestRec=list.slice().reverse().find(r=>r.actualParams.value===best);
+    const open=pbOpen===code;
+    return `<div class="pbcard" style="--c:${color}" data-d="${code}" ${dry?'':'role="button"'}><div class="pbh"><span class="pbn">${esc(T[lang]['D_'+code])} <small>${code}</small></span><span class="pbv">${pbFmt(code,best)}</span></div>
+      <small>${dry?t('pb_dry_note'):new Date(bestRec.startedAt).toLocaleDateString(lang)+' · '+T[lang].pb_att(list.length)}</small>${dry?'':pbSpark(vals)}
+      ${open&&!dry?'<div style="margin-top:8px">'+list.slice().reverse().map(r=>`<div class="hist" style="margin:0"><div class="ht"><b>${new Date(r.startedAt).toLocaleDateString(lang)}</b> · ${pbFmt(code,r.actualParams.value)}${r.notes?'<br>'+esc(r.notes):''}</div><button class="del" data-id="${r.id}" aria-label="delete">✕</button></div>`).join('')+'</div>':''}</div>`};
+  let html='';
+  const dry=spb?`<div class="pbgrp" style="--c:var(--ph-static)"><span class="ic">${ICON.timer}</span>${t('pb_g_dry')}</div>`+card('STA',[{actualParams:{value:spb},startedAt:new Date()}],'var(--ph-static)',true):'';
+  const grp=(key,icon,col)=>{const codes=DISC[key].filter(c=>by[c]);return codes.length?`<div class="pbgrp" style="--c:${col}"><span class="ic">${ICON[icon]}</span>${t('pb_g_'+key)}</div>`+codes.map(c=>card(c,by[c],col,false)).join(''):''};
+  html=dry+grp('pool','pool','var(--ph-hold_empty)')+grp('sea','sea','var(--ph-exhale)');
+  if(!html){html=`<div class="pbempty"><img alt="" src="data:image/png;base64,${LOGO_B64}"><b style="font-size:18px">${t('pb_empty_t')}</b><span class="mut" style="color:var(--ink2);font-size:14px;max-width:290px">${t('pb_empty_s')}</span><button class="btn" id="b-pb-first" style="margin-top:6px;max-width:260px">+ ${t('pb_new')}</button></div>`}
+  $('pb-body').innerHTML=html;
+  const first=$('b-pb-first');if(first)first.onclick=openPBAdd;
+  $('pb-body').querySelectorAll('.pbcard[role=button]').forEach(c=>c.onclick=e=>{if(e.target.closest('.del'))return;pbOpen=pbOpen===c.dataset.d?null:c.dataset.d;renderPB()});
+  bindDeletes($('pb-body'),renderPB);
+}
+let pbSel=null;
+function openPBAdd(){
+  pbSel=null;$('pbadd-err').textContent='';$('pbadd-notes').value='';$('pbadd-notes').placeholder=t('notes_ph');
+  const d=new Date();$('pbadd-date').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;$('pbadd-date').max=$('pbadd-date').value;
+  renderPBAdd();show('s-pb-add');track('pb_add_open');
+}
+function renderPBAdd(){
+  const g=(key,icon,col)=>`<div class="pbgrp" style="--c:${col};margin:10px 0 0"><span class="ic">${ICON[icon]}</span>${t('pb_g_'+key)}</div><div class="chips2" style="--c:${col}">${DISC[key].map(c=>`<button data-c="${c}" class="${pbSel===c?'sel':''}">${c} · ${esc(T[lang]['D_'+c])}</button>`).join('')}</div>`;
+  $('pbadd-disc').innerHTML=g('pool','pool','var(--ph-hold_empty)')+g('sea','sea','var(--ph-exhale)');
+  $('pbadd-disc').querySelectorAll('button').forEach(b=>b.onclick=()=>{pbSel=b.dataset.c;renderPBAdd()});
+  const kind=pbSel?DISC_KIND[pbSel]:null;
+  $('pbadd-vlabel').textContent=kind==='time'?t('pb_time'):kind==='depth'?t('pb_depth'):kind==='dist'?t('pb_dist'):'';
+  $('pbadd-vin').innerHTML=!kind?'':kind==='time'?`<input id="pbadd-min" type="number" inputmode="numeric" min="0" max="30" placeholder="0"> <span>${t('pb_min')}</span> <input id="pbadd-sec" type="number" inputmode="numeric" min="0" max="59" placeholder="00"> <span>${t('pb_sec')}</span>`:`<input id="pbadd-m" type="number" inputmode="decimal" min="0" max="400" step="0.5" placeholder="0"> <span>${t('pb_m')}</span>`;
+}
+$('b-pb-add').onclick=openPBAdd;
+$('b-pbadd-back').onclick=()=>goTab('s-pb');
+$('b-pbadd-save').onclick=()=>{
+  if(!pbSel)return $('pbadd-err').textContent=t('pb_err_disc');
+  let v;if(DISC_KIND[pbSel]==='time')v=(+($('pbadd-min').value||0))*60+(+($('pbadd-sec').value||0));else v=+($('pbadd-m').value||0);
+  if(!(v>0)||v>(DISC_KIND[pbSel]==='time'?1800:400))return $('pbadd-err').textContent=t('pb_err');
+  const day=$('pbadd-date').value;const when=day?new Date(day+'T12:00:00'):new Date();
+  const rec={id:uuid(),schemaVersion:SCHEMA,protocolId:'pb-log-v1',exerciseId:'pb',startedAt:when.toISOString(),endedAt:when.toISOString(),plannedParams:{},actualParams:{discipline:pbSel,value:Math.round(v*10)/10,unit:DISC_KIND[pbSel]==='time'?'s':'m'},status:'completed',abortReason:null,cyclesCompleted:0,elapsedSec:0,plannedSec:0,feedback:null,notes:$('pbadd-notes').value.trim(),nextParams:null,synced:false,owner:user?user.id:null,diag:{}};
+  const all=lsJ(KEY.sess,[]);all.push(rec);lsSet(KEY.sess,JSON.stringify(all));
+  track('pb_saved',{discipline:pbSel,value:rec.actualParams.value});log('pb:saved',rec.id);pushSessions();pbOpen=pbSel;goTab('s-pb');
+};
 
 /* ---------- settings UI ---------- */
 let paramsDirty=null;
@@ -1193,7 +1298,23 @@ function renderSettings(){
   const tl=buildTimeline(params);
   $('sum-total').textContent=T[lang].sum_total(t2(tl.total));
   $('proto-name').textContent=t('proto');
+  renderWarm();
 }
+let warmEditing=false;
+function renderWarm(){
+  const wt=buildTimeline({...params,cycles:0});
+  const secs=params.warmReps*(params.warmIn+params.warmOut);
+  $('warm-sum').textContent=T[lang].warm_sumf(params.warmReps,params.warmIn,params.warmOut);
+  $('warm-tag').textContent=(params.warmReps>0?`≈ ${t2(secs)} · `:'')+(warmMine()?t('warm_mine'):t('warm_def'));
+  $('warm-view').style.display=warmEditing?'none':'flex';$('warm-edit').style.display=warmEditing?'block':'none';
+  $('b-warm-edit').innerHTML=warmEditing?'':ICON.pencil+' '+t('warm_edit');$('b-warm-edit').style.display=warmEditing?'none':'inline-flex';
+  $('b-warm-save').textContent=t('warm_save');$('b-warm-reset').textContent=t('warm_reset');$('b-warm-cancel').textContent=t('warm_cancel');
+}
+function warmApply(o){Object.assign(params,o);lsSet(KEY.cfg,JSON.stringify(params))}
+$('b-warm-edit').onclick=()=>{warmEditing=true;track('warm_edit_open');renderSettings()};
+$('b-warm-cancel').onclick=()=>{warmEditing=false;warmApply(warmBase());renderSettings()};
+$('b-warm-reset').onclick=()=>{try{localStorage.removeItem(KEY.warm)}catch(e){}warmApply(warmDefault());track('warm_reset');warmEditing=false;renderSettings()};
+$('b-warm-save').onclick=()=>{const o={};WARM_KEYS.forEach(k=>o[k]=params[k]);lsSet(KEY.warm,JSON.stringify(o));warmEditing=false;track('warm_saved',o);renderSettings()};
 function manualChange(){clearTimeout(paramsDirty);paramsDirty=setTimeout(()=>track('params_changed',{source:'manual',params}),1500)}
 function save(){lsSet(KEY.cfg,JSON.stringify(params));renderSettings()}
 
@@ -1220,6 +1341,7 @@ function renderAccountPill(){
   const b=$('b-account');if(!b)return;
   if(isGuest()){b.textContent=t('acc_guest');b.classList.remove('acc')}
   else{const pend=lsJ(KEY.sess,[]).filter(r=>!r.synced).length;b.textContent=(userLabel()||'')+(pend?' · ⟳':' · ✓');b.classList.add('acc')}
+  const b3=$('b-account3');if(b3){b3.textContent=$('b-account').textContent;b3.classList.toggle('acc',!isGuest())}
   const b2=$('b-account2');if(b2){b2.textContent=isGuest()?t('acc_guest').split(' · ')[0]:(userLabel()||'');b2.classList.toggle('acc',!isGuest())}
 }
 function renderAccMode(){$('b-acc-mode').textContent=accMode==='new'?t('acc_mode_new'):t('acc_mode_existing')}
@@ -1241,6 +1363,7 @@ function renderAccount(){
   const mins=Math.round(all.reduce((a,r)=>a+(r.elapsedSec||0),0)/60);
   const wk=new Date();wk.setDate(wk.getDate()-wk.getDay()+1);wk.setHours(0,0,0,0);
   $('st-sessions').textContent=all.length;$('st-minutes').textContent=mins;$('st-week').textContent=all.filter(r=>new Date(r.startedAt)>=wk).length;
+  if(sb&&!user.is_anonymous)sb.rpc('is_admin').then(({data})=>{$('b-admin').style.display=data===true?'block':'none'}).catch(()=>{});
   $('acc-sync').textContent=T[lang].acc_synced(lsJ(KEY.sess,[]).filter(r=>!r.synced).length);
 }
 $('b-account').onclick=()=>openAccount(false);
@@ -1268,6 +1391,7 @@ function renderHistory(){
     const d=new Date(r.startedAt),p=r.plannedParams||{},fb={easy:'😄',right:'😐',hard:'😣'}[r.feedback]||'·';
     const when=`<b>${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit'})}</b>`;
     const notes=r.notes?'<br>'+String(r.notes).replace(/</g,'&lt;'):'';const sync=r.synced?'':' · ⟳';
+    if(r.exerciseId==='pb'){const a=r.actualParams||{};return `<div class="hist"><div class="ht"><b>${d.toLocaleDateString(lang)}</b> ${esc(T[lang]['D_'+a.discipline]||a.discipline)} — <b>${pbFmt(a.discipline,a.value)}</b>${notes}</div>${D(r)}</div>`}
     if(r.exerciseId==='static'){const a=r.actualParams||{};return `<div class="hist"><div class="ht">${when} ${t('st_title')} — <b>${fmt(a.holdSec||0)}</b> · ${T[lang].st_hist(a.firstContractionSec!=null?fmt(a.firstContractionSec):'',(a.contractions||[]).length)}${r.status==='aborted'?' · '+t('st_aborted').toLowerCase():''}${sync}${notes}</div>${D(r)}</div>`}
     return `<div class="hist"><div class="ht">${when} ${fb} — ${p.inhale}/${p.holdFull}/${p.exhale}/${p.holdEmpty} × ${r.cyclesCompleted}/${p.cycles} · ${t2(r.elapsedSec)}${r.status==='aborted'?' · '+t('abort_title').toLowerCase():''}${sync}${notes}</div>${D(r)}</div>`
   }).join(''):`<p>${t('hist_empty')}</p>`;
