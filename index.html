@@ -427,7 +427,7 @@ pre{background:#031019;color:#BFD6E0;font-size:11.5px;line-height:1.45;padding:1
    v0.3: accesso diretto 'ho già un account', modulo Apnea statica (riscaldamento
          vocalizzato, tap contrazioni, doppio tap stop, grafici).
    ============================================================ */
-const VERSION='0.5.1';
+const VERSION='0.5.2';
 const SCHEMA=1;
 const PRIVACY_VERSION='2026-10-v1';
 const SUPA_URL='https://kiqumfsqcaukxazobszm.supabase.co';
@@ -448,7 +448,7 @@ const T={
   onb_name:'Come ti chiami? (facoltativo)', onb_level:'Il tuo livello', onb_goal:'Obiettivo principale', onb_weekly:'Quanto vuoi allenarti?', onb_weekly_l:'Sessioni a settimana', onb_done:'Iniziamo',
   lv_beginner:'Principiante', lv_intermediate:'Intermedio', lv_advanced:'Avanzato',
   goal_relax:'Rilassamento', goal_eq:'Compensazione', goal_perf:'Prestazione',
-  set_warm:'Riscaldamento', set_warm_in:'Inspirazione (s)', set_warm_out:'Espirazione (s)', set_warm_n:'Respiri',
+  set_warm:'Riscaldamento', left_warm:'fine riscaldamento', warm_then:s=>'Poi inizia il training: '+params.cycles+' cicli, circa '+t2(s), set_warm_in:'Inspirazione (s)', set_warm_out:'Espirazione (s)', set_warm_n:'Respiri',
   set_main:'Allenamento', set_in:'Inspirazione (s)', set_hf:'Apnea polmoni pieni (s)', set_out:'Espirazione (s)', set_he:'Apnea polmoni vuoti (s)', set_cycles:'Cicli',
   reminder:'Inspira dal naso. Espira dalla bocca con leggera resistenza.',
   start:'Inizia', test_sound:'Prova i suoni', history:'Storico', diag:'Diagnostica', back:'Indietro', stop:'Interrompi',
@@ -456,7 +456,7 @@ const T={
   nx_title:'Prossima sessione', nx_sub:'Proposta in base al tuo feedback. Ogni valore si regola da solo.', nx_easier:'Più facile', nx_same:'Uguale', nx_harder:'Più competitiva', nx_use:'Usa questa per la prossima', nx_skip:'Lascia come adesso',
   export:'Esporta dati (JSON)', copy:'Copia log', clear_log:'Svuota log', diag_help:'Fai una sessione, poi copia questo log e incollalo in chat.',
   preparing:'Preparazione…', warm:'Riscaldamento', inhale:'Inspira', exhale:'Espira', hold_full:'Trattieni', hold_empty:'Trattieni',
-  tab_pb:'Dati apnea', wl_pb:'I miei dati apnea', pb_title:'Dati apnea', pb_sub:'I tuoi personal best', pb_new:'Nuovo', pb_add_title:'Nuovo personal best', pb_disc:'Disciplina', pb_date:'Data', pb_empty_t:'Registra il tuo primo personal best', pb_empty_s:'Inserisci i tuoi record in piscina e in mare: li ritrovi qui, con lo storico.', pb_g_dry:'A secco', pb_g_pool:'Piscina', pb_g_sea:'Mare', pb_dry_note:'dalla prova nell’app', pb_min:'min', pb_sec:'sec', pb_m:'metri', pb_time:'Tempo', pb_dist:'Distanza', pb_depth:'Profondità', pb_att:(n)=>n===1?'1 risultato':`${n} risultati`, pb_err:'Inserisci un valore valido.', pb_err_disc:'Scegli una disciplina.', pb_sub_wl:(v)=>v?`${v} record registrati`:'Registra i tuoi personal best', D_STA:'Apnea statica', D_DYN:'Dinamica con pinne', D_DYNB:'Dinamica bipinne', D_DNF:'Dinamica senza pinne', D_CWT:'Assetto costante', D_CWTB:'Assetto costante bipinne', D_CNF:'Assetto costante senza pinne', D_FIM:'Immersione libera', warm_edit:'Modifica', warm_mine:'Il tuo riscaldamento', warm_def:'Predefinito', warm_save:'Salva come mio', warm_reset:'Ripristina predefinito', warm_cancel:'Annulla', warm_saved:'Salvato', warm_sumf:(n,i,o)=>n>0?`${n} respiri · ${i} s inspira / ${o} s espira`:'Nessun riscaldamento', vol_hint:'Alza il volume e disattiva il silenzioso del telefono.', rec_title:'Recupero', rec_sub:'Respira liberamente, con calma', rec_skip:'Salta', tips:['Rilassa la mandibola','Lingua morbida, staccata dal palato','Collo e spalle morbide','Fronte e viso distesi','Lascia andare le mani','Pancia morbida, niente tensione'], lungs_full:'Polmoni pieni', lungs_empty:'Polmoni vuoti', cycle:'ciclo', left:'rimanente', last:'ultimo ciclo',
+  tab_pb:'Dati apnea', wl_pb:'I miei dati apnea', pb_title:'Dati apnea', pb_sub:'I tuoi personal best', pb_new:'Nuovo', pb_add_title:'Nuovo personal best', pb_disc:'Disciplina', pb_date:'Data', pb_empty_t:'Registra il tuo primo personal best', pb_empty_s:'Inserisci i tuoi record in piscina e in mare: li ritrovi qui, con lo storico.', pb_g_dry:'A secco', pb_g_pool:'Piscina', pb_g_sea:'Mare', pb_dry_note:'dalla prova nell’app', pb_min:'min', pb_sec:'sec', pb_m:'metri', pb_time:'Tempo', pb_dist:'Distanza', pb_depth:'Profondità', pb_att:(n)=>n===1?'1 risultato':`${n} risultati`, pb_err:'Inserisci un valore valido.', pb_err_disc:'Scegli una disciplina.', pb_sub_wl:(v)=>v?`${v} record registrati`:'Registra i tuoi personal best', D_STA:'Apnea statica', D_DYN:'Dinamica con pinne', D_DYNB:'Dinamica bipinne', D_DNF:'Dinamica senza pinne', D_CWT:'Assetto costante', D_CWTB:'Assetto costante bipinne', D_CNF:'Assetto costante senza pinne', D_FIM:'Immersione libera', warm_edit:'Modifica', warm_mine:'Il tuo riscaldamento', warm_def:'Predefinito', warm_save:'Salva come mio', warm_reset:'Ripristina predefinito', warm_cancel:'Annulla', warm_saved:'Salvato', warm_sumf:(n,i,o)=>n>0?`${n} respiri · ${i} s inspira / ${o} s espira`:'Nessun riscaldamento', vol_hint:'Alza il volume e disattiva il silenzioso del telefono.', rec_title:'Recupero', rec_sub:'Respira liberamente, con calma', rec_skip:'Salta', tips:['Rilassa la mandibola','Lingua morbida, staccata dal palato','Collo e spalle morbide','Fronte e viso distesi','Lascia andare le mani','Pancia morbida, niente tensione'], lungs_full:'Polmoni pieni', lungs_empty:'Polmoni vuoti', cycle:'ciclo', left:'training rimanente', last:'ultimo ciclo',
   done_title:'Allenamento completato', abort_title:'Allenamento interrotto',
   sum_total:(m)=>`Durata totale ${m}`,
   hist_empty:'Nessuna sessione ancora. La prima la fai oggi.',
@@ -503,7 +503,7 @@ const T={
   onb_name:'Your name (optional)', onb_level:'Your level', onb_goal:'Main goal', onb_weekly:'How often do you want to train?', onb_weekly_l:'Sessions per week', onb_done:'Let’s start',
   lv_beginner:'Beginner', lv_intermediate:'Intermediate', lv_advanced:'Advanced',
   goal_relax:'Relaxation', goal_eq:'Equalization', goal_perf:'Performance',
-  set_warm:'Warm-up', set_warm_in:'Inhale (s)', set_warm_out:'Exhale (s)', set_warm_n:'Breaths',
+  set_warm:'Warm-up', left_warm:'warm-up ends', warm_then:s=>'Then the training starts: '+params.cycles+' cycles, about '+t2(s), set_warm_in:'Inhale (s)', set_warm_out:'Exhale (s)', set_warm_n:'Breaths',
   set_main:'Training', set_in:'Inhale (s)', set_hf:'Full-lung hold (s)', set_out:'Exhale (s)', set_he:'Empty-lung hold (s)', set_cycles:'Cycles',
   reminder:'Inhale through the nose. Exhale through the mouth with slight resistance.',
   start:'Start', test_sound:'Test sounds', history:'History', diag:'Diagnostics', back:'Back', stop:'Stop',
@@ -511,7 +511,7 @@ const T={
   nx_title:'Next session', nx_sub:'Suggested from your feedback. Adjust each value independently.', nx_easier:'Easier', nx_same:'Same', nx_harder:'Harder', nx_use:'Use this next time', nx_skip:'Keep current',
   export:'Export data (JSON)', copy:'Copy log', clear_log:'Clear log', diag_help:'Do a session, then copy this log and paste it in chat.',
   preparing:'Preparing…', warm:'Warm-up', inhale:'Inhale', exhale:'Exhale', hold_full:'Hold', hold_empty:'Hold',
-  tab_pb:'Apnea data', wl_pb:'My apnea data', pb_title:'Apnea data', pb_sub:'Your personal bests', pb_new:'New', pb_add_title:'New personal best', pb_disc:'Discipline', pb_date:'Date', pb_empty_t:'Log your first personal best', pb_empty_s:'Enter your pool and sea records: you will find them here with their history.', pb_g_dry:'Dry', pb_g_pool:'Pool', pb_g_sea:'Sea', pb_dry_note:'from the in-app test', pb_min:'min', pb_sec:'sec', pb_m:'metres', pb_time:'Time', pb_dist:'Distance', pb_depth:'Depth', pb_att:(n)=>n===1?'1 result':`${n} results`, pb_err:'Enter a valid value.', pb_err_disc:'Pick a discipline.', pb_sub_wl:(v)=>v?`${v} records logged`:'Log your personal bests', D_STA:'Static apnea', D_DYN:'Dynamic with fins', D_DYNB:'Dynamic bi-fins', D_DNF:'Dynamic no fins', D_CWT:'Constant weight', D_CWTB:'Constant weight bi-fins', D_CNF:'Constant no fins', D_FIM:'Free immersion', warm_edit:'Edit', warm_mine:'Your warm-up', warm_def:'Default', warm_save:'Save as mine', warm_reset:'Restore default', warm_cancel:'Cancel', warm_saved:'Saved', warm_sumf:(n,i,o)=>n>0?`${n} breaths · ${i} s in / ${o} s out`:'No warm-up', vol_hint:'Turn the volume up and switch off silent mode.', rec_title:'Recovery', rec_sub:'Breathe freely and calmly', rec_skip:'Skip', tips:['Relax your jaw','Soft tongue, away from the palate','Neck and shoulders loose','Forehead and face relaxed','Let your hands go','Soft belly, no tension'], lungs_full:'Full lungs', lungs_empty:'Empty lungs', cycle:'cycle', left:'left', last:'last cycle',
+  tab_pb:'Apnea data', wl_pb:'My apnea data', pb_title:'Apnea data', pb_sub:'Your personal bests', pb_new:'New', pb_add_title:'New personal best', pb_disc:'Discipline', pb_date:'Date', pb_empty_t:'Log your first personal best', pb_empty_s:'Enter your pool and sea records: you will find them here with their history.', pb_g_dry:'Dry', pb_g_pool:'Pool', pb_g_sea:'Sea', pb_dry_note:'from the in-app test', pb_min:'min', pb_sec:'sec', pb_m:'metres', pb_time:'Time', pb_dist:'Distance', pb_depth:'Depth', pb_att:(n)=>n===1?'1 result':`${n} results`, pb_err:'Enter a valid value.', pb_err_disc:'Pick a discipline.', pb_sub_wl:(v)=>v?`${v} records logged`:'Log your personal bests', D_STA:'Static apnea', D_DYN:'Dynamic with fins', D_DYNB:'Dynamic bi-fins', D_DNF:'Dynamic no fins', D_CWT:'Constant weight', D_CWTB:'Constant weight bi-fins', D_CNF:'Constant no fins', D_FIM:'Free immersion', warm_edit:'Edit', warm_mine:'Your warm-up', warm_def:'Default', warm_save:'Save as mine', warm_reset:'Restore default', warm_cancel:'Cancel', warm_saved:'Saved', warm_sumf:(n,i,o)=>n>0?`${n} breaths · ${i} s in / ${o} s out`:'No warm-up', vol_hint:'Turn the volume up and switch off silent mode.', rec_title:'Recovery', rec_sub:'Breathe freely and calmly', rec_skip:'Skip', tips:['Relax your jaw','Soft tongue, away from the palate','Neck and shoulders loose','Forehead and face relaxed','Let your hands go','Soft belly, no tension'], lungs_full:'Full lungs', lungs_empty:'Empty lungs', cycle:'cycle', left:'training left', last:'last cycle',
   done_title:'Training complete', abort_title:'Training stopped',
   sum_total:(m)=>`Total duration ${m}`,
   hist_empty:'No sessions yet. The first one is today.',
@@ -887,7 +887,9 @@ function tick(){
   if(s){$('num').textContent=Math.ceil(s.end-ct);$('bar').style.width=((ct-s.start)/(s.end-s.start)*100).toFixed(1)+'%'}
   else if(ct>=tl.total){$('num').textContent='✓'}
   else{$('num').textContent=Math.ceil((tl.segs[0]?.start||0)-ct)}
-  $('m-left').textContent=t2(Math.max(0,tl.total-ct));
+  {const cur=s;let rem=tl.total-ct,lab=t('left');
+    if(cur&&cur.block==='warmup'){const we=Math.max(...tl.segs.filter(x=>x.block==='warmup').map(x=>x.end));rem=we-ct;lab=t('left_warm')}
+    $('m-left').textContent=t2(Math.max(0,rem));if(run.leftLab!==lab){run.leftLab=lab;$('m-left-l').textContent=lab}}
   run.raf=requestAnimationFrame(tick);
 }
 function setPhaseUI(s){
@@ -901,6 +903,7 @@ function setPhaseUI(s){
   $('m-cycle').textContent=`${s.rep}/${s.reps}`;
   $('m-cycle-l').textContent=s.block==='warmup'?t('warm'):(s.rep===s.reps&&s.reps>1?t('last'):t('cycle'));
   $('m-left-l').textContent=t('left');
+  if(s.block==='warmup'){const we=Math.max(...run.tl.segs.filter(x=>x.block==='warmup').map(x=>x.end));$('tipx').textContent=T[lang].warm_then(Math.round(run.tl.total-we));run.leftLab=null}
 }
 function completedCycles(){const ct=audio.currentTime;const main=run.tl.segs.filter(s=>s.block==='main');let c=0;for(const s of main){if(ct>=s.end&&s.type==='hold_empty')c=s.rep;else if(ct>=s.end&&params.holdEmpty<=0&&s.type==='exhale')c=s.rep}return c}
 function currentPhase(){const ct=audio.currentTime;const s=run.tl.segs.find(s=>ct>=s.start&&ct<s.end);return s?{block:s.block,type:s.type,rep:s.rep}:null}
